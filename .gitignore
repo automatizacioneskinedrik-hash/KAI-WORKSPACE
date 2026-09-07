@@ -1,0 +1,17 @@
+node_modules/
+.env
+data/db.json
+uploads/*
+!uploads/.gitkeep
+*.log
+.DS_Store
+
+# working docs used only to scope this MVP, not part of the app
+*.csv
+*.docx
+*.pptx.pdf
+*.pdf
+Proyecto.xlsx
+estudio.txt
+kickoff.txt
+kai-workspace-prototipo*.html
