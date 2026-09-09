@@ -478,7 +478,46 @@ async function loadHomeStats() {
     : '—';
 }
 
+/* ===== Auth (login básico de demo, solo cliente) ===== */
+const DEMO_USER = 'testing';
+const DEMO_PASS = '123';
+
+function showApp(username) {
+  document.getElementById('loginScreen').hidden = true;
+  document.getElementById('appRoot').hidden = false;
+  document.getElementById('userName').textContent = username;
+  document.getElementById('userAvatar').textContent = username.slice(0, 2).toUpperCase();
+  checkApiStatus();
+  loadHomeStats();
+  loadHistory(false);
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errorBox = document.getElementById('loginError');
+
+  if (user === DEMO_USER && pass === DEMO_PASS) {
+    errorBox.style.display = 'none';
+    sessionStorage.setItem('kaiUser', user);
+    showApp(user);
+  } else {
+    errorBox.style.display = 'block';
+  }
+  return false;
+}
+
+function handleLogout() {
+  sessionStorage.removeItem('kaiUser');
+  document.getElementById('loginForm').reset();
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('appRoot').hidden = true;
+  document.getElementById('loginScreen').hidden = false;
+}
+
 /* ===== Init ===== */
-checkApiStatus();
-loadHomeStats();
-loadHistory(false);
+const savedUser = sessionStorage.getItem('kaiUser');
+if (savedUser === DEMO_USER) {
+  showApp(savedUser);
+}

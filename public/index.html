@@ -4,10 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>K·AI Workspace — AI Technical Reviewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="app">
+
+<!-- ========== LOGIN ========== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <div class="brand-mark">K·</div>
+      <div><div class="brand-name">K<span>·AI</span> Workspace</div><span class="brand-sub">by KINEDRIK</span></div>
+    </div>
+    <div class="login-head">
+      <div class="login-title">Acceso al workspace</div>
+      <div class="login-sub">Inicia sesión con tus credenciales corporativas para continuar.</div>
+    </div>
+    <form class="login-form" id="loginForm" onsubmit="return handleLogin(event)">
+      <div class="field">
+        <label>Usuario</label>
+        <input class="select" type="text" id="loginUser" autocomplete="username" placeholder="usuario" required>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input class="select" type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+      <div class="login-error" id="loginError" style="display:none">Usuario o contraseña incorrectos.</div>
+      <button class="btn btn-grad btn-lg" type="submit" style="width:100%;margin-top:6px">Entrar</button>
+    </form>
+    <div class="login-hint">MVP interno · credenciales de demostración: <b>testing</b> / <b>123</b></div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" hidden>
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
@@ -33,8 +64,11 @@
       Certificaciones</button>
     <div class="sidebar-footer">
       <div class="user-row">
-        <div class="avatar">TU</div>
-        <div><div class="user-name">Tú</div><div class="user-role">Estudiante · MVP</div></div>
+        <div class="avatar" id="userAvatar">TU</div>
+        <div><div class="user-name" id="userName">Tú</div><div class="user-role">Estudiante · MVP</div></div>
+        <button class="logout-btn" title="Cerrar sesión" onclick="handleLogout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
       </div>
     </div>
   </aside>
@@ -51,9 +85,13 @@
 
       <!-- ========== HOME ========== -->
       <section class="screen active" id="home">
-        <div class="page-head">
-          <div class="page-title">Buenos días</div>
-          <div class="page-sub">Tu equipo de IA especializada. Tú decides, la IA te asiste.</div>
+        <div class="hero">
+          <div class="hero-inner">
+            <div class="hero-eyebrow">Panel · K·AI Workspace</div>
+            <div class="page-title">Buenos días</div>
+            <div class="page-sub">Tu equipo de IA especializada, entrenado en normativa BIM/AEC. Tú decides, la IA te asiste.</div>
+            <button class="btn btn-hero" onclick="goTo('usecase')">Iniciar una revisión →</button>
+          </div>
         </div>
         <div class="stats-row">
           <div class="card stat"><div class="stat-label">Revisiones completadas</div><div class="stat-value" id="statCount">0</div></div>
@@ -220,7 +258,7 @@
         <div class="score-row">
           <div class="card score-card">
             <div class="score-ring">
-              <svg width="92" height="92"><circle cx="46" cy="46" r="40" fill="none" stroke="#f4f4f5" stroke-width="8"/><circle id="scoreArc" cx="46" cy="46" r="40" fill="none" stroke="url(#gscore)" stroke-width="8" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/><defs><linearGradient id="gscore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs></svg>
+              <svg width="92" height="92"><circle cx="46" cy="46" r="40" fill="none" stroke="#f4f4f5" stroke-width="8"/><circle id="scoreArc" cx="46" cy="46" r="40" fill="none" stroke="url(#gscore)" stroke-width="8" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/><defs><linearGradient id="gscore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12234a"/><stop offset="1" stop-color="#2454ea"/></linearGradient></defs></svg>
               <div class="score-num" id="scoreNum">—<small>/ 100</small></div>
             </div>
             <div>
