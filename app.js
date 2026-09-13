@@ -521,3 +521,14 @@ const savedUser = sessionStorage.getItem('kaiUser');
 if (savedUser === DEMO_USER) {
   showApp(savedUser);
 }
+
+window.goTo = goTo;
+window.handleLogin = handleLogin;
+window.handleLogout = handleLogout;
+window.selectUsecase = selectUsecase;
+window.onFilePicked = onFilePicked;
+window.selectLevel = selectLevel;
+window.startAnalysis = startAnalysis;
+window.openDetail = openDetail;
+window.closeDetail = closeDetail;
+window.ask = ask;
