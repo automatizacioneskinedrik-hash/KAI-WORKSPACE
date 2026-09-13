@@ -1,28 +1,42 @@
-:root{
-  --bg:#f4f5f8; --surface:#ffffff; --border:#e6e8ee; --border-strong:#d3d7e0;
-  --text:#12172a; --text-2:#535a72; --text-3:#9498a8;
+:root {
+  --bg: #E7E7E7; /* Off-White */
+  --surface: #ffffff; 
+  --border: #d1d5db; 
+  --border-strong: #9ca3af;
+  --text: #040025; /* Navy Blue */
+  --text-2: #4b5563; 
+  --text-3: #6b7280;
 
-  --navy-950:#060b16; --navy-900:#0b1526; --navy-800:#122036; --navy-700:#1a2d4a;
+  /* Paleta Primaria Kinedrik */
+  --navy-950: #020012; 
+  --navy-900: #040025; 
+  --navy-800: #0a004a; 
+  --navy-700: #10006f;
+  --blue: #0040A4; /* Kinedrik Blue */
+  --blue-soft: #e5edfa; 
+  --blue-border: #b3cbf2;
 
-  --blue:#2454ea; --blue-soft:#eaf0ff; --blue-border:#c3d3fb;
-  --purple:#5b52c9; --purple-soft:#f0eefb; --purple-border:#d9d5f5;
-  --green:#127a4a; --green-soft:#eaf8f0;
-  --amber:#a8620e; --amber-soft:#fdf4e6;
-  --red:#b3261e; --red-soft:#fbebea; --red-border:#f3c9c6;
+  /* Paleta Secundaria */
+  --digital-blue: #2885FF;
+  --green: #8ABC43; /* Grass Green */
+  --green-soft: #f2f7eb;
+  --amber: #FBB42A; /* Sun Yellow */
+  --amber-soft: #fff8eb;
+  --orange: #FF5900; /* Tech Orange */
+  --purple: #BB8AFF; /* Tech Purple */
+  --purple-soft: #f6f0ff;
+  --red: #b3261e; 
+  --red-soft: #fbebea; 
+  --red-border: #f3c9c6;
 
-  --gold:#b8863a; --gold-soft:#faf3e6;
-
-  --grad:linear-gradient(135deg,var(--navy-800) 0%,var(--blue) 100%);
-  --grad-hero:radial-gradient(1200px 480px at 100% -10%,rgba(36,84,234,.35),transparent 60%),linear-gradient(135deg,var(--navy-950) 0%,var(--navy-800) 55%,var(--navy-700) 100%);
-
-  --radius:10px; --radius-lg:16px;
-  --shadow:0 1px 2px rgba(15,23,42,.04),0 2px 10px rgba(15,23,42,.05);
-  --shadow-lg:0 6px 16px rgba(15,23,42,.08),0 16px 40px rgba(15,23,42,.12);
-
-  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --font-head:'Sora','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --mono:'SF Mono','JetBrains Mono',Consolas,monospace;
+  --grad: linear-gradient(135deg, var(--navy-900) 0%, var(--blue) 100%);
+  --grad-hero: radial-gradient(1200px 480px at 100% -10%, rgba(0, 64, 164, 0.15), transparent 60%), linear-gradient(135deg, var(--navy-950) 0%, var(--navy-900) 55%, var(--navy-800) 100%);
+  --radius: 12px; 
+  --radius-lg: 20px;
+  --shadow: 0 4px 6px -1px rgba(4, 0, 37, 0.05), 0 2px 4px -1px rgba(4, 0, 37, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(4, 0, 37, 0.08), 0 4px 6px -2px rgba(4, 0, 37, 0.04);
 }
+
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}

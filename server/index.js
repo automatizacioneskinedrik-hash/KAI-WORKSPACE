@@ -18,9 +18,13 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB, matches the reviewed BEP prototype's stated limit
 });
 
+const publicDir = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, '..', 'dist') 
+  : path.join(__dirname, '..');
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(publicDir));  
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, hasApiKey: hasApiKey() });
