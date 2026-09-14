@@ -7,7 +7,8 @@ const state = {
   selectedFile: null,
   currentRecord: null,
   currentRiskId: null,
-  trial: null
+  trial: null,
+  role: 'estudiante'
 };
 
 /* ===== Navegación ===== */
@@ -17,20 +18,55 @@ const crumbs = {
   upload: 'AI Skills <span class="sep">/</span> AI Technical Reviewer <span class="sep">/</span> <b>Subir documento</b>',
   processing: 'AI Skills <span class="sep">/</span> AI Technical Reviewer <span class="sep">/</span> <b>Analizando…</b>',
   results: 'AI Skills <span class="sep">/</span> AI Technical Reviewer <span class="sep">/</span> <b>Informe</b>',
-  history: '<b>Historial</b>'
+  history: '<b>Historial</b>',
+  progress: '<b>Mi progreso</b>',
+  admin: '<b>Administración</b> <span class="sep">/</span> System prompt'
 };
 
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const screen = document.getElementById(id);
+  screen.classList.add('active');
   document.getElementById('crumb').innerHTML = crumbs[id] || '<b>AI Skills</b>';
   document.querySelector('.content').scrollTop = 0;
 
   document.getElementById('navHome').classList.toggle('active', id === 'home' || id === 'usecase' || id === 'upload' || id === 'processing' || id === 'results');
   document.getElementById('navHistory').classList.toggle('active', id === 'history');
+  document.getElementById('navProgress').classList.toggle('active', id === 'progress');
+  const navAdmin = document.getElementById('navAdmin');
+  if (navAdmin) navAdmin.classList.toggle('active', id === 'admin');
 
   if (id === 'history') loadHistory(true);
   if (id === 'home') loadHomeStats();
+  if (id === 'progress') loadProgress();
+  if (id === 'admin') loadAdminPrompt();
+  revealIn(screen);
+}
+
+/* ===== Entrance animations + count-up ===== */
+function revealIn(scope) {
+  const els = (scope || document).querySelectorAll('.reveal:not(.in)');
+  els.forEach(el => el.classList.remove('in'));
+  // force reflow so the transition replays even if the nodes were already in the DOM
+  void (scope || document.body).offsetHeight;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => els.forEach(el => el.classList.add('in')));
+  });
+}
+
+function animateNumber(el, target, duration = 700) {
+  const from = 0;
+  const start = performance.now();
+  const isInt = Number.isInteger(target);
+  function tick(now) {
+    const p = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const value = from + (target - from) * eased;
+    el.textContent = isInt ? Math.round(value) : value.toFixed(0);
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = String(target);
+  }
+  requestAnimationFrame(tick);
 }
 
 /* ===== API status ===== */
@@ -182,9 +218,15 @@ function renderResults(record) {
     `${record.normativa} · ${record.especialidad} · Nivel ${record.nivel} · ${new Date(record.createdAt).toLocaleString('es-ES')}`;
 
   const score = Number.isFinite(r.score) ? Math.max(0, Math.min(100, Math.round(r.score))) : 0;
-  document.getElementById('scoreNum').innerHTML = `${score}<small>/ 100</small>`;
-  const circumference = 251;
-  document.getElementById('scoreArc').setAttribute('stroke-dashoffset', String(circumference - (circumference * score) / 100));
+  const scoreNumEl = document.getElementById('scoreNum');
+  scoreNumEl.innerHTML = `<span id="scoreNumVal">0</span><small>/ 100</small>`;
+  animateNumber(document.getElementById('scoreNumVal'), score, 1000);
+  const circumference = 295.3;
+  const scoreArc = document.getElementById('scoreArc');
+  scoreArc.setAttribute('stroke-dashoffset', String(circumference));
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    scoreArc.setAttribute('stroke-dashoffset', String(circumference - (circumference * score) / 100));
+  }));
   document.getElementById('scoreCaption').textContent = r.summary ? truncate(r.summary, 140) : '—';
 
   const risks = r.risks || [];
@@ -193,10 +235,10 @@ function renderResults(record) {
   const recs = r.recommendations || [];
   const checklistIssues = checklist.filter(c => c.status !== 'ok').length;
 
-  setKpi('kpiRisks', 'kpiRisksBar', risks.length, Math.max(risks.length, 1) * 8, 'var(--red)');
-  setKpi('kpiChecklistFail', 'kpiChecklistBar', checklistIssues, Math.max(checklist.length, 1), 'var(--amber)');
-  setKpi('kpiCorrect', 'kpiCorrectBar', correct.length, Math.max(correct.length, 1), 'var(--green)');
-  setKpi('kpiRecs', 'kpiRecsBar', recs.length, Math.max(recs.length, 1), 'var(--purple)');
+  setKpi('kpiRisks', 'kpiRisksBar', risks.length, Math.max(risks.length, 1) * 8);
+  setKpi('kpiChecklistFail', 'kpiChecklistBar', checklistIssues, Math.max(checklist.length, 1));
+  setKpi('kpiCorrect', 'kpiCorrectBar', correct.length, Math.max(correct.length, 1));
+  setKpi('kpiRecs', 'kpiRecsBar', recs.length, Math.max(recs.length, 1));
 
   document.getElementById('summaryText').textContent = r.summary || 'Sin resumen disponible.';
 
@@ -206,9 +248,11 @@ function renderResults(record) {
   if (!risks.length) {
     riskList.appendChild(emptyRow('No se detectaron riesgos.'));
   }
-  for (const risk of risks) {
+  risks.forEach((risk, idx) => {
     const row = document.createElement('div');
-    row.className = 'risk-item';
+    row.className = 'risk-item reveal';
+    row.style.setProperty('--d', idx);
+    row.style.setProperty('--sev-color', risk.severity === 'alto' ? 'var(--red)' : risk.severity === 'medio' ? 'var(--amber)' : 'var(--blue)');
     row.onclick = () => openDetail(risk.id);
 
     const sev = document.createElement('span');
@@ -237,14 +281,15 @@ function renderResults(record) {
     row.appendChild(arrow);
 
     riskList.appendChild(row);
-  }
+  });
 
   const recList = document.getElementById('recList');
   recList.innerHTML = '';
   if (!recs.length) recList.appendChild(emptyRow('Sin recomendaciones.'));
   recs.forEach((rec, idx) => {
     const row = document.createElement('div');
-    row.className = 'rec-item';
+    row.className = 'rec-item reveal';
+    row.style.setProperty('--d', idx);
     const num = document.createElement('span');
     num.className = 'rec-num';
     num.textContent = String(idx + 1);
@@ -259,9 +304,10 @@ function renderResults(record) {
   const checklistEl = document.getElementById('checklist');
   checklistEl.innerHTML = '';
   if (!checklist.length) checklistEl.appendChild(emptyRow('Sin checklist disponible.'));
-  for (const item of checklist) {
+  checklist.forEach((item, idx) => {
     const row = document.createElement('div');
-    row.className = 'check-item';
+    row.className = 'check-item reveal';
+    row.style.setProperty('--d', idx);
     const ico = document.createElement('span');
     ico.className = `check-ico ${checkIcoClass(item.status)}`;
     ico.textContent = checkIcoSymbol(item.status);
@@ -274,15 +320,16 @@ function renderResults(record) {
     row.appendChild(label);
     row.appendChild(ref);
     checklistEl.appendChild(row);
-  }
+  });
 
   document.getElementById('correctChip').textContent = String(correct.length);
   const correctEl = document.getElementById('correctList');
   correctEl.innerHTML = '';
   if (!correct.length) correctEl.appendChild(emptyRow('Sin apartados marcados como correctos.'));
-  for (const item of correct) {
+  correct.forEach((item, idx) => {
     const row = document.createElement('div');
-    row.className = 'check-item';
+    row.className = 'check-item reveal';
+    row.style.setProperty('--d', idx);
     const ico = document.createElement('span');
     ico.className = 'check-ico check-ok';
     ico.textContent = '✓';
@@ -291,7 +338,7 @@ function renderResults(record) {
     row.appendChild(ico);
     row.appendChild(label);
     correctEl.appendChild(row);
-  }
+  });
 }
 
 function emptyRow(text) {
@@ -302,12 +349,11 @@ function emptyRow(text) {
   div.textContent = text;
   return div;
 }
-function setKpi(numId, barId, value, base, color) {
-  document.getElementById(numId).textContent = String(value);
+function setKpi(numId, barId, value, base) {
+  animateNumber(document.getElementById(numId), value, 800);
   const pct = Math.min(100, Math.round((value / base) * 100));
   const bar = document.getElementById(barId);
-  bar.style.width = pct + '%';
-  bar.style.background = color;
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = pct + '%'; }));
 }
 function sevChipClass(sev) {
   return sev === 'alto' ? 'chip-red' : sev === 'medio' ? 'chip-amber' : 'chip-blue';
@@ -402,7 +448,7 @@ async function ask(question) {
 
   const pending = document.createElement('div');
   pending.className = 'ask-msg a';
-  pending.textContent = 'Pensando…';
+  pending.innerHTML = 'Pensando <span class="typing-dots"><span></span><span></span><span></span></span>';
   log.appendChild(pending);
   log.scrollTop = log.scrollHeight;
 
@@ -449,9 +495,10 @@ function renderHistory(list) {
     return;
   }
   empty.style.display = 'none';
-  for (const item of list) {
+  list.forEach((item, idx) => {
     const row = document.createElement('div');
-    row.className = 'history-row';
+    row.className = 'history-row reveal';
+    row.style.setProperty('--d', idx);
     row.onclick = () => openHistoryItem(item.id);
 
     const name = document.createElement('div');
@@ -473,7 +520,8 @@ function renderHistory(list) {
     row.appendChild(score);
 
     container.appendChild(row);
-  }
+  });
+  revealIn(container);
 }
 
 async function openHistoryItem(id) {
@@ -488,29 +536,198 @@ async function openHistoryItem(id) {
 /* ===== Home stats ===== */
 async function loadHomeStats() {
   const list = await loadHistory(false);
-  document.getElementById('statCount').textContent = String(list.length);
+  animateNumber(document.getElementById('statCount'), list.length, 600);
+
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentCount = list.filter(a => new Date(a.createdAt).getTime() >= weekAgo).length;
+  const deltaEl = document.getElementById('statCountDelta');
+  if (recentCount > 0) {
+    deltaEl.hidden = false;
+    deltaEl.textContent = `+${recentCount} esta semana`;
+  } else {
+    deltaEl.hidden = true;
+  }
+
   const high = list.reduce((sum, a) => sum + ((a.riskCounts && a.riskCounts.alto) || 0), 0);
   const total = list.reduce((sum, a) => sum + Object.values(a.riskCounts || {}).reduce((s, n) => s + n, 0), 0);
-  document.getElementById('statHigh').textContent = String(high);
-  document.getElementById('statTotal').textContent = String(total);
+  animateNumber(document.getElementById('statHigh'), high, 600);
+  animateNumber(document.getElementById('statTotal'), total, 600);
   const scored = list.filter(a => Number.isFinite(a.score));
-  document.getElementById('statScore').textContent = scored.length
-    ? Math.round(scored.reduce((s, a) => s + a.score, 0) / scored.length)
-    : '—';
+  const statScore = document.getElementById('statScore');
+  if (scored.length) animateNumber(statScore, Math.round(scored.reduce((s, a) => s + a.score, 0) / scored.length), 600);
+  else statScore.textContent = '—';
 }
 
-/* ===== Auth (login básico de demo, solo cliente) ===== */
-const DEMO_USER = 'testing';
-const DEMO_PASS = '123';
+/* ===== Mi progreso (analítica real sobre el historial) ===== */
+async function loadProgress() {
+  let stats;
+  try {
+    const res = await fetch('/api/stats');
+    stats = await res.json();
+  } catch {
+    return;
+  }
 
-function showApp(username) {
+  const empty = document.getElementById('progressEmpty');
+  const content = document.getElementById('progressContent');
+  if (!stats.totalAnalyses) {
+    empty.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  content.style.display = 'block';
+
+  animateNumber(document.getElementById('progTotal'), stats.totalAnalyses, 600);
+  const avgScoreEl = document.getElementById('progAvgScore');
+  if (Number.isFinite(stats.avgScore)) animateNumber(avgScoreEl, stats.avgScore, 600);
+  else avgScoreEl.textContent = '—';
+  const totalRisks = stats.riskTotals.alto + stats.riskTotals.medio + stats.riskTotals.bajo;
+  animateNumber(document.getElementById('progTotalRisks'), totalRisks, 600);
+
+  const trendEl = document.getElementById('progScoreTrend');
+  trendEl.innerHTML = '';
+  stats.scoreTrend.forEach((s, idx) => {
+    const row = document.createElement('div');
+    row.className = 'trend-row reveal';
+    row.style.setProperty('--d', idx);
+    row.innerHTML = `
+      <div class="trend-info">
+        <div class="trend-name">${escapeHtml(s.fileName)}</div>
+        <div class="trend-date">${new Date(s.createdAt).toLocaleDateString('es-ES')}</div>
+      </div>
+      <div class="trend-bar-track"><i style="width:0%"></i></div>
+      <div class="trend-score">${s.score}</div>`;
+    trendEl.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      row.querySelector('i').style.width = Math.max(3, s.score) + '%';
+    }));
+  });
+  if (!stats.scoreTrend.length) trendEl.appendChild(emptyRow('Sin datos todavía.'));
+
+  const sevEl = document.getElementById('progRiskSeverity');
+  sevEl.innerHTML = '';
+  const sevConfig = [
+    ['alto', 'Alto', 'var(--red)'],
+    ['medio', 'Medio', 'var(--amber)'],
+    ['bajo', 'Bajo', 'var(--blue)']
+  ];
+  sevConfig.forEach(([key, label, color], idx) => {
+    const count = stats.riskTotals[key] || 0;
+    const pct = totalRisks ? Math.round((count / totalRisks) * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'sev-row reveal';
+    row.style.setProperty('--d', idx);
+    row.innerHTML = `<div class="sev-row-label">${label}</div><div class="sev-row-bar"><i style="width:0%;background:${color}"></i></div><div class="sev-row-num">${count}</div>`;
+    sevEl.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { row.querySelector('i').style.width = pct + '%'; }));
+  });
+
+  const checkEl = document.getElementById('progChecklist');
+  checkEl.innerHTML = '';
+  const checklistTotal = stats.checklistTotals.ok + stats.checklistTotals.warn + stats.checklistTotals.fail;
+  const checkConfig = [
+    ['ok', 'Cumple', 'var(--green)'],
+    ['warn', 'Aviso', 'var(--amber)'],
+    ['fail', 'Falla', 'var(--red)']
+  ];
+  checkConfig.forEach(([key, label, color], idx) => {
+    const count = stats.checklistTotals[key] || 0;
+    const pct = checklistTotal ? Math.round((count / checklistTotal) * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'sev-row reveal';
+    row.style.setProperty('--d', idx);
+    row.innerHTML = `<div class="sev-row-label">${label}</div><div class="sev-row-bar"><i style="width:0%;background:${color}"></i></div><div class="sev-row-num">${count}</div>`;
+    checkEl.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { row.querySelector('i').style.width = pct + '%'; }));
+  });
+
+  const topEl = document.getElementById('progTopRisks');
+  topEl.innerHTML = '';
+  if (!stats.topRisks.length) topEl.appendChild(emptyRow('Todavía no hay suficientes revisiones para detectar patrones.'));
+  stats.topRisks.forEach((r, idx) => {
+    const row = document.createElement('div');
+    row.className = 'rec-item reveal';
+    row.style.setProperty('--d', idx);
+    const num = document.createElement('span');
+    num.className = 'rec-num';
+    num.textContent = String(r.count);
+    const text = document.createElement('div');
+    text.textContent = r.title;
+    row.appendChild(num);
+    row.appendChild(text);
+    topEl.appendChild(row);
+  });
+
+  revealIn(content);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+/* ===== Admin: system prompt ===== */
+async function loadAdminPrompt() {
+  const status = document.getElementById('adminStatus');
+  const textarea = document.getElementById('adminPromptText');
+  status.textContent = 'Cargando…';
+  try {
+    const res = await fetch('/api/admin/prompt', { headers: { 'x-admin-token': DEMO_ADMIN_TOKEN } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'No se pudo cargar.');
+    textarea.value = data.customInstructions || '';
+    status.textContent = '';
+  } catch (err) {
+    status.textContent = 'Error: ' + err.message;
+  }
+}
+
+async function saveAdminPrompt() {
+  const status = document.getElementById('adminStatus');
+  const textarea = document.getElementById('adminPromptText');
+  const btn = document.getElementById('adminSaveBtn');
+  btn.disabled = true;
+  status.textContent = 'Guardando…';
+  try {
+    const res = await fetch('/api/admin/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': DEMO_ADMIN_TOKEN },
+      body: JSON.stringify({ customInstructions: textarea.value })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'No se pudo guardar.');
+    status.textContent = '✓ Guardado. Se aplicará en el próximo análisis o pregunta a la IA.';
+  } catch (err) {
+    status.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ===== Auth (login básico de demo, solo cliente — sin backend de usuarios real todavía) ===== */
+const DEMO_ACCOUNTS = {
+  testing: { pass: '123', role: 'estudiante' },
+  admin: { pass: 'kinedrik2026', role: 'admin' }
+};
+// Placeholder mientras no hay autenticación real: debe coincidir con ADMIN_TOKEN en .env.
+// Cualquiera con acceso a las devtools del navegador puede leer esta constante.
+const DEMO_ADMIN_TOKEN = '68fe2d6fbdb0f9a969e8e744';
+
+function showApp(username, role) {
+  state.role = role || 'estudiante';
   document.getElementById('loginScreen').hidden = true;
   document.getElementById('appRoot').hidden = false;
   document.getElementById('userName').textContent = username;
   document.getElementById('userAvatar').textContent = username.slice(0, 2).toUpperCase();
+  document.getElementById('userRole').textContent = state.role === 'admin' ? 'Administrador' : 'Estudiante · MVP';
+  document.getElementById('navAdminSection').hidden = state.role !== 'admin';
+  document.getElementById('navAdmin').hidden = state.role !== 'admin';
   checkApiStatus();
   loadHomeStats();
   loadHistory(false);
+  revealIn(document.getElementById('home'));
 }
 
 function handleLogin(event) {
@@ -518,11 +735,13 @@ function handleLogin(event) {
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const errorBox = document.getElementById('loginError');
+  const account = DEMO_ACCOUNTS[user];
 
-  if (user === DEMO_USER && pass === DEMO_PASS) {
+  if (account && account.pass === pass) {
     errorBox.style.display = 'none';
     sessionStorage.setItem('kaiUser', user);
-    showApp(user);
+    sessionStorage.setItem('kaiRole', account.role);
+    showApp(user, account.role);
   } else {
     errorBox.style.display = 'block';
   }
@@ -531,6 +750,7 @@ function handleLogin(event) {
 
 function handleLogout() {
   sessionStorage.removeItem('kaiUser');
+  sessionStorage.removeItem('kaiRole');
   document.getElementById('loginForm').reset();
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('appRoot').hidden = true;
@@ -539,6 +759,6 @@ function handleLogout() {
 
 /* ===== Init ===== */
 const savedUser = sessionStorage.getItem('kaiUser');
-if (savedUser === DEMO_USER) {
-  showApp(savedUser);
+if (savedUser && DEMO_ACCOUNTS[savedUser]) {
+  showApp(savedUser, sessionStorage.getItem('kaiRole') || DEMO_ACCOUNTS[savedUser].role);
 }

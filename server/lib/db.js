@@ -33,6 +33,10 @@ function getAnalysis(id) {
   return analyses.find(a => a.id === id) || null;
 }
 
+function listFullAnalyses() {
+  return load().analyses;
+}
+
 function insertAnalysis(record) {
   const data = load();
   data.analyses.push(record);
@@ -49,4 +53,4 @@ function updateAnalysis(id, patch) {
   return data.analyses[idx];
 }
 
-module.exports = { listAnalyses, getAnalysis, insertAnalysis, updateAnalysis };
+module.exports = { listAnalyses, getAnalysis, listFullAnalyses, insertAnalysis, updateAnalysis };

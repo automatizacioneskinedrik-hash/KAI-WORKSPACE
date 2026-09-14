@@ -30,8 +30,12 @@ Reglas:
 - Si el documento no contiene información suficiente para evaluar algo, dilo explícitamente en el resumen en vez de inventarlo.
 - No incluyas comentarios ni texto fuera del objeto JSON.`;
 
-function buildAnalysisPrompt({ tipo, normativa, especialidad, nivel, fileName, text, truncated }) {
-  const system = `Eres un segundo revisor técnico experto en gestión BIM (Building Information Modelling) para proyectos AEC (arquitectura, ingeniería y construcción), especializado en ${especialidad}. Tu trabajo es revisar documentación técnica (tipo: ${tipo}) frente a la normativa ${normativa}, detectando errores, incoherencias internas, riesgos contractuales y omisiones. No sustituyes el criterio profesional del revisor humano: tu salida es un análisis de apoyo que el experto validará. Nivel de revisión solicitado: ${nivel}.`;
+function buildAnalysisPrompt({ tipo, normativa, especialidad, nivel, fileName, text, truncated, customInstructions }) {
+  let system = `Eres un segundo revisor técnico experto en gestión BIM (Building Information Modelling) para proyectos AEC (arquitectura, ingeniería y construcción), especializado en ${especialidad}. Tu trabajo es revisar documentación técnica (tipo: ${tipo}) frente a la normativa ${normativa}, detectando errores, incoherencias internas, riesgos contractuales y omisiones. No sustituyes el criterio profesional del revisor humano: tu salida es un análisis de apoyo que el experto validará. Nivel de revisión solicitado: ${nivel}.`;
+
+  if (customInstructions && customInstructions.trim()) {
+    system += `\n\nInstrucciones adicionales del equipo experto AEC (prioritarias, síguelas al pie de la letra junto con lo anterior):\n${customInstructions.trim()}`;
+  }
 
   const user = `Documento a revisar: "${fileName}".
 ${truncated ? 'NOTA: el documento es extenso y el texto fue truncado a los primeros caracteres; evalúa solo sobre el contenido disponible y menciónalo en el resumen si es relevante.\n' : ''}
@@ -44,8 +48,12 @@ ${RESULT_SCHEMA_HINT}`;
   return { system, user };
 }
 
-function buildChatPrompt({ risk, question, tipo, normativa, docExcerpt }) {
-  const system = `Eres el mismo segundo revisor técnico BIM que generó el informe de revisión (normativa ${normativa}, tipo de documento ${tipo}). Ahora respondes preguntas puntuales del revisor humano sobre UN riesgo concreto ya detectado. Responde en español, en 3-8 frases, de forma concreta y aplicada. Deja claro que la decisión final es del profesional humano. No repitas literalmente el JSON del informe.`;
+function buildChatPrompt({ risk, question, tipo, normativa, docExcerpt, customInstructions }) {
+  let system = `Eres el mismo segundo revisor técnico BIM que generó el informe de revisión (normativa ${normativa}, tipo de documento ${tipo}). Ahora respondes preguntas puntuales del revisor humano sobre UN riesgo concreto ya detectado. Responde en español, en 3-8 frases, de forma concreta y aplicada. Deja claro que la decisión final es del profesional humano. No repitas literalmente el JSON del informe.`;
+
+  if (customInstructions && customInstructions.trim()) {
+    system += `\n\nInstrucciones adicionales del equipo experto AEC (prioritarias):\n${customInstructions.trim()}`;
+  }
 
   const user = `Riesgo sobre el que se pregunta:
 - Título: ${risk.title}

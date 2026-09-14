@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 
 const db = require('./lib/db');
+const config = require('./lib/config');
 const { extractText } = require('./lib/extract');
 const { buildAnalysisPrompt, buildChatPrompt } = require('./lib/prompts');
 const { callAnalysisJson, callChat, hasApiKey } = require('./lib/llm');
@@ -83,13 +84,15 @@ app.post('/api/analyze', analyzeLimiter, upload.single('file'), async (req, res)
     const normativa = pickValid(req.body.normativa, NORMATIVAS, 'ISO 19650-2:2018');
     const especialidad = pickValid(req.body.especialidad, ESPECIALIDADES, 'BIM Management');
     const nivel = pickValid(req.body.nivel, NIVELES, 'Estándar');
+    const fileName = fixFileNameEncoding(req.file.originalname);
 
-    const { text, truncated, fullLength } = await extractText(req.file.buffer, req.file.mimetype, req.file.originalname);
+    const { text, truncated, fullLength } = await extractText(req.file.buffer, req.file.mimetype, fileName);
 
     const { system, user } = buildAnalysisPrompt({
       tipo, normativa, especialidad, nivel,
-      fileName: req.file.originalname,
-      text, truncated
+      fileName,
+      text, truncated,
+      customInstructions: config.getConfig().customInstructions
     });
 
     const { result, usage, model } = await callAnalysisJson({ system, user });
@@ -101,7 +104,7 @@ app.post('/api/analyze', analyzeLimiter, upload.single('file'), async (req, res)
 
     const record = {
       id: crypto.randomUUID(),
-      fileName: req.file.originalname,
+      fileName,
       fileSizeBytes: req.file.size,
       tipo, normativa, especialidad, nivel,
       createdAt: new Date().toISOString(),
@@ -137,7 +140,8 @@ app.post('/api/analyses/:id/chat', chatLimiter, async (req, res) => {
     const { system, user } = buildChatPrompt({
       risk, question,
       tipo: record.tipo, normativa: record.normativa,
-      docExcerpt: risk.quote
+      docExcerpt: risk.quote,
+      customInstructions: config.getConfig().customInstructions
     });
 
     const { content, usage } = await callChat({ system, user, json: false });
@@ -153,8 +157,80 @@ app.post('/api/analyses/:id/chat', chatLimiter, async (req, res) => {
   }
 });
 
+app.get('/api/stats', (req, res) => {
+  const full = db.listFullAnalyses();
+  const scoreTrend = full
+    .filter(a => Number.isFinite(a.score))
+    .map(a => ({ id: a.id, fileName: a.fileName, createdAt: a.createdAt, score: a.score }))
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  const riskTotals = { alto: 0, medio: 0, bajo: 0 };
+  const checklistTotals = { ok: 0, warn: 0, fail: 0 };
+  const riskTitleCounts = {};
+  for (const a of full) {
+    const rc = a.riskCounts || {};
+    riskTotals.alto += rc.alto || 0;
+    riskTotals.medio += rc.medio || 0;
+    riskTotals.bajo += rc.bajo || 0;
+    for (const item of (a.result && a.result.checklist) || []) {
+      if (checklistTotals[item.status] !== undefined) checklistTotals[item.status]++;
+    }
+    for (const risk of (a.result && a.result.risks) || []) {
+      riskTitleCounts[risk.title] = (riskTitleCounts[risk.title] || 0) + 1;
+    }
+  }
+  const topRisks = Object.entries(riskTitleCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([title, count]) => ({ title, count }));
+
+  const scored = scoreTrend.map(s => s.score);
+  const avgScore = scored.length ? Math.round(scored.reduce((s, v) => s + v, 0) / scored.length) : null;
+
+  res.json({
+    totalAnalyses: full.length,
+    avgScore,
+    scoreTrend,
+    riskTotals,
+    checklistTotals,
+    topRisks
+  });
+});
+
+function requireAdmin(req, res, next) {
+  const token = process.env.ADMIN_TOKEN;
+  if (!token) {
+    return res.status(501).json({ error: 'ADMIN_TOKEN no configurado en el servidor. Añádelo a .env para habilitar el panel de admin.', code: 'ADMIN_NOT_CONFIGURED' });
+  }
+  if (req.get('x-admin-token') !== token) {
+    return res.status(401).json({ error: 'Token de administrador inválido.', code: 'UNAUTHORIZED' });
+  }
+  next();
+}
+
+app.get('/api/admin/prompt', requireAdmin, (req, res) => {
+  res.json({ customInstructions: config.getConfig().customInstructions });
+});
+
+app.post('/api/admin/prompt', requireAdmin, (req, res) => {
+  const { customInstructions } = req.body || {};
+  const updated = config.setCustomInstructions(customInstructions);
+  res.json({ customInstructions: updated.customInstructions });
+});
+
 function pickValid(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;
+}
+
+// Los navegadores envían el nombre de archivo del multipart en UTF-8, pero
+// busboy/multer lo decodifican como latin1 por defecto: sin esto, cualquier
+// tilde o ñ en el nombre llega corrupta ("transformaciÃ³n").
+function fixFileNameEncoding(name) {
+  try {
+    return Buffer.from(name, 'latin1').toString('utf8');
+  } catch {
+    return name;
+  }
 }
 
 function handleApiError(res, err) {

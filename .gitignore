@@ -1,6 +1,7 @@
 node_modules/
 .env
 data/db.json
+data/config.json
 uploads/*
 !uploads/.gitkeep
 *.log

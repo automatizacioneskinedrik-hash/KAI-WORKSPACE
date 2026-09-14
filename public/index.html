@@ -36,7 +36,7 @@
       <div class="login-error" id="loginError" style="display:none">Usuario o contraseña incorrectos.</div>
       <button class="btn btn-grad btn-lg" type="submit" style="width:100%;margin-top:6px">Entrar</button>
     </form>
-    <div class="login-hint">MVP interno · credenciales de demostración: <b>testing</b> / <b>123</b></div>
+    <div class="login-hint">MVP interno · demo estudiante: <b>testing</b> / <b>123</b> · demo admin: <b>admin</b> / <b>kinedrik2026</b></div>
   </div>
 </div>
 
@@ -54,7 +54,7 @@
     <button class="nav-item" id="navHistory" onclick="goTo('history')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
       Historial <span class="nav-badge" id="historyBadge">0</span></button>
-    <button class="nav-item" disabled title="Próximamente">
+    <button class="nav-item" id="navProgress" onclick="goTo('progress')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
       Mi progreso</button>
     <div class="nav-section">Mi máster</div>
@@ -64,10 +64,14 @@
     <button class="nav-item" disabled title="Próximamente">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></svg>
       Certificaciones</button>
+    <div class="nav-section" id="navAdminSection" hidden>Administración</div>
+    <button class="nav-item" id="navAdmin" onclick="goTo('admin')" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      System prompt</button>
     <div class="sidebar-footer">
       <div class="user-row">
         <div class="avatar" id="userAvatar">TU</div>
-        <div><div class="user-name" id="userName">Tú</div><div class="user-role">Estudiante · MVP</div></div>
+        <div><div class="user-name" id="userName">Tú</div><div class="user-role" id="userRole">Estudiante · MVP</div></div>
         <button class="logout-btn" title="Cerrar sesión" onclick="handleLogout()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
         </button>
@@ -97,13 +101,13 @@
           </div>
         </div>
         <div class="stats-row">
-          <div class="card stat"><div class="stat-label">Revisiones completadas</div><div class="stat-value" id="statCount">0</div></div>
-          <div class="card stat"><div class="stat-label">Riesgos altos detectados</div><div class="stat-value" id="statHigh">0</div></div>
-          <div class="card stat"><div class="stat-label">Riesgos totales detectados</div><div class="stat-value" id="statTotal">0</div></div>
-          <div class="card stat"><div class="stat-label">Score medio</div><div class="stat-value" id="statScore">—</div></div>
+          <div class="card stat reveal" style="--d:0"><div class="stat-label">Revisiones completadas</div><div class="stat-value"><span id="statCount">0</span><span class="stat-delta" id="statCountDelta" hidden></span></div></div>
+          <div class="card stat reveal" style="--d:1"><div class="stat-label">Riesgos altos detectados</div><div class="stat-value" id="statHigh">0</div></div>
+          <div class="card stat reveal" style="--d:2"><div class="stat-label">Riesgos totales detectados</div><div class="stat-value" id="statTotal">0</div></div>
+          <div class="card stat reveal" style="--d:3"><div class="stat-label">Score medio</div><div class="stat-value" id="statScore">—</div></div>
         </div>
         <div class="skills-grid">
-          <div class="card skill-card" onclick="goTo('usecase')">
+          <div class="card skill-card reveal" style="--d:4" onclick="goTo('usecase')">
             <span class="skill-cta">→</span>
             <div class="skill-icon" style="background:var(--blue-soft);color:var(--blue)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7z"/></svg>
@@ -112,7 +116,7 @@
             <div class="skill-desc">Revisa documentación BIM con IA real: errores, incoherencias, riesgos y checklist frente a normativa.</div>
             <div class="skill-meta"><span class="chip chip-blue">BIM Management</span><span class="chip chip-green">● Disponible</span></div>
           </div>
-          <div class="card skill-card soon">
+          <div class="card skill-card soon reveal" style="--d:5">
             <div class="skill-icon" style="background:var(--purple-soft);color:var(--purple)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
             </div>
@@ -120,7 +124,7 @@
             <div class="skill-desc">Explora alternativas de diseño y compara opciones con criterios técnicos objetivos.</div>
             <div class="skill-meta"><span class="chip chip-gray">Diseño</span><span class="chip chip-gray">Próximamente</span></div>
           </div>
-          <div class="card skill-card soon">
+          <div class="card skill-card soon reveal" style="--d:6">
             <div class="skill-icon" style="background:var(--green-soft);color:var(--green)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
             </div>
@@ -128,7 +132,7 @@
             <div class="skill-desc">Estructura decisiones técnicas complejas con matrices de criterios y análisis de riesgo.</div>
             <div class="skill-meta"><span class="chip chip-gray">Gestión</span><span class="chip chip-gray">Próximamente</span></div>
           </div>
-          <div class="card skill-card soon">
+          <div class="card skill-card soon reveal" style="--d:7">
             <div class="skill-icon" style="background:var(--amber-soft);color:var(--amber)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M9 7h7M9 11h5"/></svg>
             </div>
@@ -146,11 +150,11 @@
           <div class="page-sub">¿Qué quieres revisar hoy? Selecciona el tipo de documento.</div>
         </div>
         <div class="usecase-grid" id="usecaseGrid">
-          <div class="card usecase" data-tipo="EIR" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">EIR</div><div class="usecase-desc">Exchange Information Requirements — requisitos de información del cliente.</div></div></div>
-          <div class="card usecase selected" data-tipo="BEP" onclick="selectUsecase(this)"><span class="usecase-tag chip chip-purple">Más usado</span><div class="radio"></div><div><div class="usecase-name">BEP</div><div class="usecase-desc">BIM Execution Plan — plan de ejecución BIM pre o post contrato.</div></div></div>
-          <div class="card usecase" data-tipo="IFC / Modelo BIM" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">IFC</div><div class="usecase-desc">Modelo IFC — validación de estructura de datos y parámetros (a partir de su documentación).</div></div></div>
-          <div class="card usecase" data-tipo="Memoria técnica" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">Memoria</div><div class="usecase-desc">Memoria técnica de proyecto — coherencia y completitud.</div></div></div>
-          <div class="card usecase" data-tipo="Verificación ISO" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">ISO</div><div class="usecase-desc">Verificación de conformidad frente a ISO 19650 y UNE-EN.</div></div></div>
+          <div class="card usecase reveal" style="--d:0" data-tipo="EIR" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">EIR</div><div class="usecase-desc">Exchange Information Requirements — requisitos de información del cliente.</div></div></div>
+          <div class="card usecase selected reveal" style="--d:1" data-tipo="BEP" onclick="selectUsecase(this)"><span class="usecase-tag chip chip-purple">Más usado</span><div class="radio"></div><div><div class="usecase-name">BEP</div><div class="usecase-desc">BIM Execution Plan — plan de ejecución BIM pre o post contrato.</div></div></div>
+          <div class="card usecase reveal" style="--d:2" data-tipo="IFC / Modelo BIM" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">IFC</div><div class="usecase-desc">Modelo IFC — validación de estructura de datos y parámetros (a partir de su documentación).</div></div></div>
+          <div class="card usecase reveal" style="--d:3" data-tipo="Memoria técnica" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">Memoria</div><div class="usecase-desc">Memoria técnica de proyecto — coherencia y completitud.</div></div></div>
+          <div class="card usecase reveal" style="--d:4" data-tipo="Verificación ISO" onclick="selectUsecase(this)"><div class="radio"></div><div><div class="usecase-name">ISO</div><div class="usecase-desc">Verificación de conformidad frente a ISO 19650 y UNE-EN.</div></div></div>
         </div>
         <div class="actions-row">
           <button class="btn btn-ghost" onclick="goTo('home')">← Volver</button>
@@ -163,6 +167,28 @@
         <div class="page-head">
           <div class="page-title">Revisar un documento</div>
           <div class="page-sub">Sube tu documento (PDF o DOCX) y configura el contexto de la revisión.</div>
+        </div>
+        <div class="flow-steps" id="uploadFlowSteps">
+          <div class="flow-step reveal" style="--d:0">
+            <div class="flow-ico">1</div>
+            <div class="flow-title">Subes el documento</div>
+            <div class="flow-desc">PDF o DOCX real, hasta 50&nbsp;MB.</div>
+          </div>
+          <div class="flow-step reveal" style="--d:1">
+            <div class="flow-ico">2</div>
+            <div class="flow-title">La IA lo analiza</div>
+            <div class="flow-desc">Extrae el texto real y lo revisa frente a la normativa.</div>
+          </div>
+          <div class="flow-step reveal" style="--d:2">
+            <div class="flow-ico">3</div>
+            <div class="flow-title">Recibes el informe</div>
+            <div class="flow-desc">Score, riesgos priorizados, checklist y recomendaciones.</div>
+          </div>
+          <div class="flow-step reveal" style="--d:3">
+            <div class="flow-ico">4</div>
+            <div class="flow-title">Preguntas a la IA</div>
+            <div class="flow-desc">Profundiza en cualquier hallazgo desde el propio informe.</div>
+          </div>
         </div>
         <div class="upload-layout">
           <div>
@@ -183,7 +209,7 @@
           </div>
           <div class="card config-panel">
             <div style="font-weight:600;margin-bottom:16px">Contexto de la revisión</div>
-            <div class="field"><label>Normativa de referencia</label>
+            <div class="field"><label>Normativa de referencia <span class="info-dot" tabindex="0" data-tip="La IA evalúa el documento contra las cláusulas de esta normativa y las cita en cada riesgo.">i</span></label>
               <select class="select" id="normativa">
                 <option>ISO 19650-2:2018</option>
                 <option>ISO 19650-1:2018</option>
@@ -191,7 +217,7 @@
                 <option>PAS 1192 (legado)</option>
               </select>
             </div>
-            <div class="field"><label>Especialidad</label>
+            <div class="field"><label>Especialidad <span class="info-dot" tabindex="0" data-tip="Ajusta el criterio técnico de la IA al ámbito indicado (estructuras, MEP, arquitectura…).">i</span></label>
               <select class="select" id="especialidad">
                 <option>BIM Management</option>
                 <option>Estructuras</option>
@@ -199,7 +225,7 @@
                 <option>Arquitectura</option>
               </select>
             </div>
-            <div class="field"><label>Nivel de revisión</label>
+            <div class="field"><label>Nivel de revisión <span class="info-dot" tabindex="0" data-tip="Exhaustivo pide a la IA más profundidad y más riesgos revisados; Rápido prioriza velocidad.">i</span></label>
               <div class="level-row" id="levelRow">
                 <button class="level-opt" data-nivel="Rápido" onclick="selectLevel(this)">Rápido</button>
                 <button class="level-opt selected" data-nivel="Estándar" onclick="selectLevel(this)">Estándar</button>
@@ -223,6 +249,7 @@
           </div>
           <div class="page-title" style="font-size:19px" id="procTitle">Analizando documento…</div>
           <div class="page-sub">Tu segundo revisor está trabajando con IA real. Esto puede tardar entre 10 y 60 segundos según el tamaño del documento.</div>
+          <div class="proc-shimmer"></div>
           <div class="proc-steps" id="procSteps">
             <div class="proc-step"><span class="ico">1</span> Extrayendo texto del documento</div>
             <div class="proc-step"><span class="ico">2</span> Enviando a revisión con IA</div>
@@ -245,6 +272,67 @@
         </div>
       </section>
 
+      <!-- ========== PROGRESS (analítica real) ========== -->
+      <section class="screen" id="progress">
+        <div class="page-head">
+          <div class="page-title">Mi progreso</div>
+          <div class="page-sub">Analítica real de tus revisiones — calculada desde tu historial, sin XP ni niveles inventados.</div>
+        </div>
+        <div id="progressEmpty" class="card panel" style="display:none">
+          <div class="panel-body" style="color:var(--text-3);font-size:13px">Todavía no hay datos suficientes. Completa al menos una revisión en AI Technical Reviewer.</div>
+        </div>
+        <div id="progressContent">
+          <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+            <div class="card stat reveal" style="--d:0"><div class="stat-label">Revisiones analizadas</div><div class="stat-value" id="progTotal">0</div></div>
+            <div class="card stat reveal" style="--d:1"><div class="stat-label">Score medio de madurez</div><div class="stat-value" id="progAvgScore">—</div></div>
+            <div class="card stat reveal" style="--d:2"><div class="stat-label">Riesgos totales detectados</div><div class="stat-value" id="progTotalRisks">0</div></div>
+          </div>
+          <div class="dash-grid">
+            <div>
+              <div class="card panel reveal" style="margin-bottom:16px;--d:3">
+                <div class="panel-head"><span class="panel-title">Evolución del score <span class="info-dot" tabindex="0" data-tip="Score de cada revisión, en el orden en que la hiciste. Te permite ver si tus documentos mejoran con el tiempo.">i</span></span></div>
+                <div id="progScoreTrend"></div>
+              </div>
+              <div class="card panel reveal" style="--d:4">
+                <div class="panel-head"><span class="panel-title">Riesgos más frecuentes <span class="info-dot" tabindex="0" data-tip="Los hallazgos que más se repiten entre todas tus revisiones — útil para ver patrones recurrentes en tus documentos.">i</span></span></div>
+                <div id="progTopRisks"></div>
+              </div>
+            </div>
+            <div>
+              <div class="card panel reveal" style="margin-bottom:16px;--d:5">
+                <div class="panel-head"><span class="panel-title">Riesgos por severidad</span></div>
+                <div id="progRiskSeverity"></div>
+              </div>
+              <div class="card panel reveal" style="--d:6">
+                <div class="panel-head"><span class="panel-title">Cumplimiento de checklist</span></div>
+                <div id="progChecklist"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== ADMIN: SYSTEM PROMPT ========== -->
+      <section class="screen" id="admin">
+        <div class="page-head">
+          <div class="page-title">Panel de administración</div>
+          <div class="page-sub">Instrucciones adicionales para la IA revisora (normativa, tono, criterios del equipo experto AEC).</div>
+        </div>
+        <div class="card" style="padding:14px 16px;margin-bottom:20px;max-width:760px;border-color:var(--amber-border,#fde3b8);background:var(--amber-soft);color:var(--amber);font-size:12.5px;line-height:1.6">
+          ⚠ Acceso temporal mientras no existe autenticación real de administrador: se protege con un token compartido guardado en este navegador, visible desde las herramientas de desarrollador. No pegues aquí secretos — solo texto de instrucciones para la IA.
+        </div>
+        <div class="card config-panel" style="max-width:760px">
+          <div class="field">
+            <label>Instrucciones adicionales <span class="info-dot" tabindex="0" data-tip="Este texto se añade automáticamente al system prompt del análisis y del chat contextual, en cada revisión.">i</span></label>
+            <textarea class="select" id="adminPromptText" rows="12" style="resize:vertical;font-family:var(--mono);font-size:12.5px;line-height:1.6" placeholder="Pega aquí el system prompt de normativa BIM/AEC que os envíe el equipo experto…"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn btn-grad" id="adminSaveBtn" onclick="saveAdminPrompt()">Guardar instrucciones</button>
+            <span id="adminStatus" style="font-size:12.5px;color:var(--text-3)"></span>
+          </div>
+        </div>
+      </section>
+
       <!-- ========== RESULTS ========== -->
       <section class="screen" id="results">
         <div class="page-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px">
@@ -259,46 +347,78 @@
         </div>
 
         <div class="score-row">
-          <div class="card score-card">
+          <div class="card score-card reveal" style="--d:0">
             <div class="score-ring">
-              <svg width="92" height="92"><circle cx="46" cy="46" r="40" fill="none" stroke="#f4f4f5" stroke-width="8"/><circle id="scoreArc" cx="46" cy="46" r="40" fill="none" stroke="url(#gscore)" stroke-width="8" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/><defs><linearGradient id="gscore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12234a"/><stop offset="1" stop-color="#2454ea"/></linearGradient></defs></svg>
+              <svg width="108" height="108"><circle cx="54" cy="54" r="47" fill="none" stroke="#f0f1f5" stroke-width="9"/><circle id="scoreArc" cx="54" cy="54" r="47" fill="none" stroke="url(#gscore)" stroke-width="9" stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3"/><defs><linearGradient id="gscore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12234a"/><stop offset="1" stop-color="#2454ea"/></linearGradient></defs></svg>
               <div class="score-num" id="scoreNum">—<small>/ 100</small></div>
             </div>
-            <div>
-              <div style="font-weight:650;font-size:15px">Madurez del documento</div>
+            <div class="score-meta">
+              <div class="score-meta-label">Madurez del documento <span class="info-dot" tabindex="0" data-tip="Puntuación 0-100 que la IA asigna según cuántos riesgos encontró y su severidad frente a la normativa elegida.">i</span></div>
               <div style="font-size:12.5px;color:var(--text-2);margin-top:4px" id="scoreCaption">—</div>
             </div>
           </div>
           <div class="kpi-grid">
-            <div class="card kpi"><div class="kpi-num" style="color:var(--red)" id="kpiRisks">0</div><div class="kpi-label">Riesgos detectados</div><div class="kpi-bar"><i id="kpiRisksBar" style="width:0%;background:var(--red)"></i></div></div>
-            <div class="card kpi"><div class="kpi-num" style="color:var(--amber)" id="kpiChecklistFail">0</div><div class="kpi-label">Puntos de checklist en fallo/aviso</div><div class="kpi-bar"><i id="kpiChecklistBar" style="width:0%;background:var(--amber)"></i></div></div>
-            <div class="card kpi"><div class="kpi-num" style="color:var(--green)" id="kpiCorrect">0</div><div class="kpi-label">Apartados correctos</div><div class="kpi-bar"><i id="kpiCorrectBar" style="width:0%;background:var(--green)"></i></div></div>
-            <div class="card kpi"><div class="kpi-num" style="color:var(--purple)" id="kpiRecs">0</div><div class="kpi-label">Recomendaciones</div><div class="kpi-bar"><i id="kpiRecsBar" style="width:0%;background:var(--purple)"></i></div></div>
+            <div class="card kpi reveal" style="--d:1;--kpi-accent:var(--red);--kpi-accent-soft:var(--red-soft)">
+              <div class="kpi-top">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg></div>
+                <span class="info-dot" tabindex="0" data-tip="Incoherencias, errores u omisiones detectados frente a la normativa elegida, ordenados por severidad.">i</span>
+              </div>
+              <div class="kpi-num" id="kpiRisks">0</div>
+              <div class="kpi-label">Riesgos detectados</div>
+              <div class="kpi-bar"><i id="kpiRisksBar"></i></div>
+            </div>
+            <div class="card kpi reveal" style="--d:2;--kpi-accent:var(--amber);--kpi-accent-soft:var(--amber-soft)">
+              <div class="kpi-top">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <span class="info-dot" tabindex="0" data-tip="Puntos del checklist normativo marcados en aviso o fallo — no cumplen del todo la cláusula correspondiente.">i</span>
+              </div>
+              <div class="kpi-num" id="kpiChecklistFail">0</div>
+              <div class="kpi-label">Puntos de checklist en fallo/aviso</div>
+              <div class="kpi-bar"><i id="kpiChecklistBar"></i></div>
+            </div>
+            <div class="card kpi reveal" style="--d:3;--kpi-accent:var(--green);--kpi-accent-soft:var(--green-soft)">
+              <div class="kpi-top">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7z"/></svg></div>
+                <span class="info-dot" tabindex="0" data-tip="Apartados del documento que la IA considera que sí cumplen razonablemente con la normativa.">i</span>
+              </div>
+              <div class="kpi-num" id="kpiCorrect">0</div>
+              <div class="kpi-label">Apartados correctos</div>
+              <div class="kpi-bar"><i id="kpiCorrectBar"></i></div>
+            </div>
+            <div class="card kpi reveal" style="--d:4;--kpi-accent:var(--purple);--kpi-accent-soft:var(--purple-soft)">
+              <div class="kpi-top">
+                <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .8 1.7v.6h6.4v-.6c0-.7.3-1.3.8-1.7A7 7 0 0 0 12 2Z"/></svg></div>
+                <span class="info-dot" tabindex="0" data-tip="Acciones priorizadas y accionables que propone la IA para mejorar el documento.">i</span>
+              </div>
+              <div class="kpi-num" id="kpiRecs">0</div>
+              <div class="kpi-label">Recomendaciones</div>
+              <div class="kpi-bar"><i id="kpiRecsBar"></i></div>
+            </div>
           </div>
         </div>
 
-        <div class="card panel" style="margin-bottom:16px">
+        <div class="card panel reveal" style="margin-bottom:16px;--d:5">
           <div class="panel-head"><span class="panel-title">Resumen ejecutivo</span><span class="chip chip-purple" style="margin-left:auto">Generado por IA · revisa y valida</span></div>
           <div class="panel-body summary-text" id="summaryText">—</div>
         </div>
 
         <div class="dash-grid">
           <div>
-            <div class="card panel" style="margin-bottom:16px">
-              <div class="panel-head"><span class="panel-title">Riesgos priorizados</span><span class="chip chip-gray" style="margin-left:auto" id="riskCountChip">—</span></div>
+            <div class="card panel reveal" style="margin-bottom:16px;--d:6">
+              <div class="panel-head"><span class="panel-title">Riesgos priorizados <span class="info-dot" tabindex="0" data-tip="Haz clic en cualquier riesgo para ver el detalle, la cita del documento y preguntarle a la IA sobre él.">i</span></span><span class="chip chip-gray" style="margin-left:auto" id="riskCountChip">—</span></div>
               <div id="riskList"></div>
             </div>
-            <div class="card panel">
+            <div class="card panel reveal" style="--d:7">
               <div class="panel-head"><span class="panel-title">Recomendaciones principales</span></div>
               <div id="recList"></div>
             </div>
           </div>
           <div>
-            <div class="card panel" style="margin-bottom:16px">
+            <div class="card panel reveal" style="margin-bottom:16px;--d:6">
               <div class="panel-head"><span class="panel-title">Checklist normativa</span><span class="chip chip-green" style="margin-left:auto" id="checklistChip">—</span></div>
               <div id="checklist"></div>
             </div>
-            <div class="card panel">
+            <div class="card panel reveal" style="--d:7">
               <div class="panel-head"><span class="panel-title">Apartados correctos</span><span class="chip chip-gray" style="margin-left:auto" id="correctChip">—</span></div>
               <div id="correctList"></div>
             </div>
@@ -318,13 +438,13 @@
     <div class="drawer-title" id="dTitle">—</div>
   </div>
   <div class="drawer-body">
-    <div class="d-section"><div class="d-label">Explicación</div><div class="d-text" id="dExp">—</div></div>
-    <div class="d-section"><div class="d-label">Referencia normativa</div><div class="d-norm">
+    <div class="d-section" style="--d:0"><div class="d-label">Explicación</div><div class="d-text" id="dExp">—</div></div>
+    <div class="d-section" style="--d:1"><div class="d-label">Referencia normativa</div><div class="d-norm">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       <div id="dNorm">—</div></div></div>
-    <div class="d-section" id="dQuoteSection" style="display:none"><div class="d-label">Cita del documento</div><div class="d-quote" id="dQuote">—</div></div>
-    <div class="d-section"><div class="d-label">Propuesta de mejora</div><div class="d-code" id="dFix">—</div></div>
-    <div class="d-section">
+    <div class="d-section" id="dQuoteSection" style="display:none;--d:2"><div class="d-label">Cita del documento</div><div class="d-quote" id="dQuote">—</div></div>
+    <div class="d-section" style="--d:3"><div class="d-label">Propuesta de mejora</div><div class="d-code" id="dFix">—</div></div>
+    <div class="d-section" style="--d:4">
       <div class="d-label">Preguntar a la IA sobre este riesgo</div>
       <div class="ask-box">
         <div class="ask-log" id="askLog"></div>
