@@ -319,7 +319,16 @@
           <div class="page-sub">Instrucciones adicionales para la IA revisora (normativa, tono, criterios del equipo experto AEC).</div>
         </div>
         <div class="card" style="padding:14px 16px;margin-bottom:20px;max-width:760px;border-color:var(--amber-border,#fde3b8);background:var(--amber-soft);color:var(--amber);font-size:12.5px;line-height:1.6">
-          ⚠ Acceso temporal mientras no existe autenticación real de administrador: se protege con un token compartido guardado en este navegador, visible desde las herramientas de desarrollador. No pegues aquí secretos — solo texto de instrucciones para la IA.
+          ⚠ Acceso temporal mientras no existe autenticación real de administrador: este panel llama al backend con el token que pegues abajo (el mismo valor que <code>ADMIN_TOKEN</code> en tu <code>.env</code>). Se guarda solo en este navegador (localStorage), nunca en el código. No pegues aquí secretos ajenos — solo texto de instrucciones para la IA en el campo de abajo.
+        </div>
+        <div class="card config-panel" style="max-width:760px;margin-bottom:16px">
+          <div class="field" style="margin-bottom:0">
+            <label>Token de administrador <span class="info-dot" tabindex="0" data-tip="El valor de ADMIN_TOKEN en el .env del servidor. Sin él, el backend rechaza las peticiones a este panel.">i</span></label>
+            <div style="display:flex;gap:10px">
+              <input class="select" type="password" id="adminTokenInput" placeholder="Pega aquí tu ADMIN_TOKEN">
+              <button class="btn btn-ghost" onclick="saveAdminToken()" style="flex-shrink:0">Recordar</button>
+            </div>
+          </div>
         </div>
         <div class="card config-panel" style="max-width:760px">
           <div class="field">

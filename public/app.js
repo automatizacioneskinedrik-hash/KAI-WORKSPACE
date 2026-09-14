@@ -668,13 +668,34 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-/* ===== Admin: system prompt ===== */
+/* ===== Admin: system prompt =====
+   Sin backend de autenticación real todavía: el token de admin no vive en
+   el código, lo pega el propio admin y se guarda solo en su navegador. */
+function getAdminToken() {
+  return localStorage.getItem('kaiAdminToken') || '';
+}
+
+function saveAdminToken() {
+  const input = document.getElementById('adminTokenInput');
+  localStorage.setItem('kaiAdminToken', input.value.trim());
+  document.getElementById('adminStatus').textContent = 'Token guardado en este navegador.';
+  loadAdminPrompt();
+}
+
 async function loadAdminPrompt() {
   const status = document.getElementById('adminStatus');
   const textarea = document.getElementById('adminPromptText');
+  const tokenInput = document.getElementById('adminTokenInput');
+  tokenInput.value = getAdminToken();
+
+  const token = getAdminToken();
+  if (!token) {
+    status.textContent = 'Pega tu ADMIN_TOKEN arriba para cargar las instrucciones.';
+    return;
+  }
   status.textContent = 'Cargando…';
   try {
-    const res = await fetch('/api/admin/prompt', { headers: { 'x-admin-token': DEMO_ADMIN_TOKEN } });
+    const res = await fetch('/api/admin/prompt', { headers: { 'x-admin-token': token } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'No se pudo cargar.');
     textarea.value = data.customInstructions || '';
@@ -688,12 +709,17 @@ async function saveAdminPrompt() {
   const status = document.getElementById('adminStatus');
   const textarea = document.getElementById('adminPromptText');
   const btn = document.getElementById('adminSaveBtn');
+  const token = getAdminToken();
+  if (!token) {
+    status.textContent = 'Pega y guarda tu ADMIN_TOKEN arriba primero.';
+    return;
+  }
   btn.disabled = true;
   status.textContent = 'Guardando…';
   try {
     const res = await fetch('/api/admin/prompt', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': DEMO_ADMIN_TOKEN },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
       body: JSON.stringify({ customInstructions: textarea.value })
     });
     const data = await res.json();
@@ -711,9 +737,6 @@ const DEMO_ACCOUNTS = {
   testing: { pass: '123', role: 'estudiante' },
   admin: { pass: 'kinedrik2026', role: 'admin' }
 };
-// Placeholder mientras no hay autenticación real: debe coincidir con ADMIN_TOKEN en .env.
-// Cualquiera con acceso a las devtools del navegador puede leer esta constante.
-const DEMO_ADMIN_TOKEN = '68fe2d6fbdb0f9a969e8e744';
 
 function showApp(username, role) {
   state.role = role || 'estudiante';
