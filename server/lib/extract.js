@@ -17,13 +17,17 @@ async function extractText(buffer, mimeType, originalName) {
     const result = await mammoth.extractRawText({ buffer });
     text = result.value;
   } else {
-    throw new Error('Formato no soportado. Usa PDF o DOCX.');
+    const err = new Error('Formato no soportado. Usa PDF o DOCX.');
+    err.code = 'BAD_FORMAT';
+    throw err;
   }
 
   text = text.replace(/\r\n/g, '\n').replace(/[ \t]+\n/g, '\n').trim();
 
   if (!text) {
-    throw new Error('No se pudo extraer texto del documento (¿está escaneado como imagen?).');
+    const err = new Error('No se pudo extraer texto del documento (¿está escaneado como imagen?).');
+    err.code = 'BAD_FORMAT';
+    throw err;
   }
 
   const truncated = text.length > MAX_CHARS;

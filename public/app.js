@@ -6,7 +6,8 @@ const state = {
   nivel: 'Estándar',
   selectedFile: null,
   currentRecord: null,
-  currentRiskId: null
+  currentRiskId: null,
+  trial: null
 };
 
 /* ===== Navegación ===== */
@@ -39,15 +40,32 @@ async function checkApiStatus() {
     const res = await fetch('/api/health');
     const data = await res.json();
     if (data.hasApiKey) {
-      chip.textContent = '● IA conectada';
+      chip.textContent = `● IA conectada · ${data.model || 'gpt-4o-mini'}`;
       chip.className = 'chip chip-green';
     } else {
       chip.textContent = '● Sin OPENAI_API_KEY — configura .env';
       chip.className = 'chip chip-red';
     }
+    if (data.trial) renderTrialChip(data.trial);
   } catch {
     chip.textContent = '● Backend no disponible';
     chip.className = 'chip chip-red';
+  }
+}
+
+function renderTrialChip(trial) {
+  state.trial = trial;
+  const chip = document.getElementById('trialChip');
+  chip.hidden = false;
+  chip.textContent = `Prueba gratuita: ${trial.used}/${trial.limit} análisis usados`;
+  chip.className = trial.remaining > 0 ? 'chip chip-gold' : 'chip chip-red';
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  if (trial.remaining <= 0) {
+    analyzeBtn.disabled = true;
+    analyzeBtn.title = 'Límite de prueba gratuita alcanzado';
+  } else if (state.selectedFile) {
+    analyzeBtn.disabled = false;
+    analyzeBtn.title = '';
   }
 }
 
@@ -132,17 +150,20 @@ async function startAnalysis() {
   form.append('especialidad', document.getElementById('especialidad').value);
   form.append('nivel', state.nivel);
 
+  let data = null;
   try {
     const res = await fetch('/api/analyze', { method: 'POST', body: form });
-    const data = await res.json();
+    data = await res.json();
     clearTimeout(stepTimer);
 
     if (!res.ok) {
+      if (data.trial) renderTrialChip(data.trial);
       throw new Error(data.error || 'Error desconocido al analizar el documento.');
     }
 
     steps.forEach(s => { s.classList.remove('running'); s.classList.add('done'); });
     state.currentRecord = data;
+    if (data.trial) renderTrialChip(data.trial);
     renderResults(data);
     setTimeout(() => goTo('results'), 400);
   } catch (err) {

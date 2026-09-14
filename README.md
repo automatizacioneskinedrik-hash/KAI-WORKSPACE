@@ -44,6 +44,39 @@ Variables de entorno (`.env`):
 | `OPENAI_API_KEY` | Clave de la API de OpenAI. Sin ella, `/api/analyze` responde 412 con un mensaje claro. |
 | `OPENAI_MODEL` | Modelo a usar (por defecto `gpt-4o-mini`). |
 | `PORT` | Puerto del servidor (por defecto `8080`). |
+| `FREE_TRIAL_LIMIT` | Nº de análisis permitidos antes de bloquear con 402 (por defecto `5`). Ver [Plan de monetización](#plan-de-monetización-siguiente-fase). |
+
+## Backend endurecido
+
+- **Helmet**: cabeceras de seguridad estándar en todas las respuestas.
+- **Rate limiting**: `/api/analyze` (30 peticiones/15 min) y `/api/analyses/:id/chat` (60/15 min) por IP, para evitar abuso antes de exponer la demo fuera de local.
+- **Validación de entrada**: `tipo`, `normativa`, `especialidad` y `nivel` se validan contra listas cerradas (si llega un valor no reconocido, se usa el valor por defecto en vez de inyectarlo tal cual en el prompt).
+- **Manejo de errores centralizado**: archivo demasiado grande (413), formato no soportado (400), JSON inválido del modelo (502), sin API key (412), 404 explícito para rutas `/api/*` no existentes.
+
+## Prueba gratuita (free trial) — real, no simulada
+
+El backend cuenta los análisis reales guardados en `data/db.json` y expone el estado en
+`/api/health` (`trial: { used, limit, remaining }`). Al llegar a `FREE_TRIAL_LIMIT`,
+`/api/analyze` responde `402 TRIAL_LIMIT_REACHED` y el frontend deshabilita el botón de
+análisis mostrando el aviso. No hay ningún límite falso ni contador decorativo: es la
+misma fuente de datos que alimenta el historial.
+
+## Plan de monetización (siguiente fase)
+
+Pensado para la siguiente iteración, sin implementar todavía (requiere decisiones de
+producto y credenciales de la pasarela):
+
+1. **Pasarela de pago**: Stripe Checkout + Billing Portal es la opción recomendada (rápida
+   de integrar, factura automática, sin PCI a cargo nuestro).
+2. **Planes**: mantener el free trial actual (N análisis) como plan gratuito; añadir un
+   plan de pago con análisis ilimitados o por paquetes de tokens (alineado con el
+   "monedero de tokens" que ya menciona el estudio de viabilidad).
+3. **Identidad real de usuario**: el límite de prueba hoy es global a la instancia porque
+   el login es una demo solo-cliente (`testing`/`123`). Para cobrar por usuario hace falta
+   autenticación real (Moodle SSO vía LTI 1.3, según el estudio, o un login propio mínimo)
+   antes de poder atar el contador de trial y el plan a una cuenta concreta.
+4. **Webhook de Stripe → backend**: actualizar el plan del usuario en `data/db.json` (o en
+   Firebase, cuando se migre la persistencia) al confirmarse el pago.
 
 ## Estructura
 
@@ -73,7 +106,9 @@ primera demo:
 
 ## Próximos pasos sugeridos
 
-1. Añadir `OPENAI_API_KEY` real y validar el flujo completo con un BEP real.
-2. `git init`, primer commit, y push al repositorio remoto de GitHub del proyecto.
-3. Desplegar en Cloud Run (arquitectura recomendada por el estudio de viabilidad) cuando
+1. Validar el flujo completo con un BEP real y `OPENAI_API_KEY` de producción.
+2. Migrar `data/db.json` a Firebase (Firestore) cuando se necesite persistencia multi-usuario real.
+3. Autenticación real de usuario (sustituir el login demo solo-cliente) para atar plan/trial a cada cuenta.
+4. Integrar Stripe para el plan de pago (ver [Plan de monetización](#plan-de-monetización-siguiente-fase)).
+5. Desplegar en Cloud Run (arquitectura recomendada por el estudio de viabilidad) cuando
    se quiera compartir la demo fuera de local.
