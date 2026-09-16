@@ -219,15 +219,18 @@ function renderResults(record) {
 
   const score = Number.isFinite(r.score) ? Math.max(0, Math.min(100, Math.round(r.score))) : 0;
   const scoreNumEl = document.getElementById('scoreNum');
-  scoreNumEl.innerHTML = `<span id="scoreNumVal">0</span><small>/ 100</small>`;
+  scoreNumEl.innerHTML = `<span id="scoreNumVal" class="text-3xl font-extrabold text-navy font-head">0</span><small class="text-xs font-bold text-gray-400">/100</small>`;
   animateNumber(document.getElementById('scoreNumVal'), score, 1000);
-  const circumference = 295.3;
+  
+  const circumference = 251;
   const scoreArc = document.getElementById('scoreArc');
-  scoreArc.setAttribute('stroke-dashoffset', String(circumference));
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    scoreArc.setAttribute('stroke-dashoffset', String(circumference - (circumference * score) / 100));
-  }));
-  document.getElementById('scoreCaption').textContent = r.summary ? truncate(r.summary, 140) : '—';
+  if (scoreArc) {
+    scoreArc.setAttribute('stroke-dashoffset', String(circumference));
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      scoreArc.setAttribute('stroke-dashoffset', String(circumference - (circumference * score) / 100));
+    }));
+  }
+  document.getElementById('scoreCaption').textContent = r.summary ? truncate(r.summary, 160) : '—';
 
   const risks = r.risks || [];
   const checklist = r.checklist || [];
@@ -235,109 +238,132 @@ function renderResults(record) {
   const recs = r.recommendations || [];
   const checklistIssues = checklist.filter(c => c.status !== 'ok').length;
 
-  setKpi('kpiRisks', 'kpiRisksBar', risks.length, Math.max(risks.length, 1) * 8);
+  setKpi('kpiRisks', 'kpiRisksBar', risks.length, Math.max(risks.length, 1) * 4);
   setKpi('kpiChecklistFail', 'kpiChecklistBar', checklistIssues, Math.max(checklist.length, 1));
   setKpi('kpiCorrect', 'kpiCorrectBar', correct.length, Math.max(correct.length, 1));
   setKpi('kpiRecs', 'kpiRecsBar', recs.length, Math.max(recs.length, 1));
 
   document.getElementById('summaryText').textContent = r.summary || 'Sin resumen disponible.';
 
-  document.getElementById('riskCountChip').textContent = `${risks.length} · ordenados por severidad`;
+  // 1. Riesgos Priorizados
+  document.getElementById('riskCountChip').textContent = `${risks.length} hallazgos ordenados por severidad`;
   const riskList = document.getElementById('riskList');
   riskList.innerHTML = '';
   if (!risks.length) {
-    riskList.appendChild(emptyRow('No se detectaron riesgos.'));
+    riskList.appendChild(emptyRow('No se detectaron riesgos en este análisis.'));
   }
   risks.forEach((risk, idx) => {
-    const row = document.createElement('div');
-    row.className = 'risk-item reveal';
-    row.style.setProperty('--d', idx);
-    row.style.setProperty('--sev-color', risk.severity === 'alto' ? 'var(--red)' : risk.severity === 'medio' ? 'var(--amber)' : 'var(--blue)');
-    row.onclick = () => openDetail(risk.id);
+    const card = document.createElement('div');
+    const borderSevClass = risk.severity === 'alto'
+      ? 'border-l-rose-500 hover:border-rose-300'
+      : risk.severity === 'medio'
+      ? 'border-l-amber-500 hover:border-amber-300'
+      : 'border-l-blue-500 hover:border-blue-300';
 
-    const sev = document.createElement('span');
-    sev.className = `sev sev-${risk.severity}`;
-    row.appendChild(sev);
+    card.className = `p-4 sm:p-5 bg-white rounded-2xl border border-gray-100/90 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer reveal relative overflow-hidden group border-l-4 ${borderSevClass}`;
+    card.style.setProperty('--d', idx);
+    card.onclick = () => openDetail(risk.id);
 
-    const mid = document.createElement('div');
-    const title = document.createElement('div');
-    title.className = 'risk-title';
-    title.textContent = risk.title;
-    const loc = document.createElement('div');
-    loc.className = 'risk-loc';
-    loc.textContent = risk.location || '';
-    mid.appendChild(title);
-    mid.appendChild(loc);
-    row.appendChild(mid);
+    const sevBadge = risk.severity === 'alto'
+      ? `<span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-extrabold text-[11px] border border-rose-200/80 flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>Riesgo Alto</span>`
+      : risk.severity === 'medio'
+      ? `<span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-extrabold text-[11px] border border-amber-200/80 flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Riesgo Medio</span>`
+      : `<span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-extrabold text-[11px] border border-blue-200/80 flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Riesgo Bajo</span>`;
 
-    const chip = document.createElement('span');
-    chip.className = `chip ${sevChipClass(risk.severity)}`;
-    chip.textContent = sevLabel(risk.severity);
-    row.appendChild(chip);
+    const locationPill = risk.location
+      ? `<span class="px-2.5 py-1 rounded-lg bg-gray-100/80 text-gray-600 font-mono text-[11px] font-semibold flex items-center gap-1">📍 ${escapeHtml(risk.location)}</span>`
+      : `<span class="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-400 font-mono text-[11px]">Sección general</span>`;
 
-    const arrow = document.createElement('span');
-    arrow.className = 'risk-arrow';
-    arrow.textContent = '→';
-    row.appendChild(arrow);
+    card.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+        <div class="font-head font-bold text-navy text-sm sm:text-base group-hover:text-kinedrik-blue transition-colors leading-snug">
+          ${escapeHtml(risk.title)}
+        </div>
+        ${sevBadge}
+      </div>
+      <div class="flex items-center justify-between gap-3 mt-3 pt-2.5 border-t border-gray-100/80">
+        ${locationPill}
+        <div class="text-xs font-bold text-kinedrik-blue group-hover:translate-x-1 transition-transform flex items-center gap-1">
+          Profundizar con IA &rarr;
+        </div>
+      </div>
+    `;
 
-    riskList.appendChild(row);
+    riskList.appendChild(card);
   });
 
+  // 2. Recomendaciones
   const recList = document.getElementById('recList');
   recList.innerHTML = '';
-  if (!recs.length) recList.appendChild(emptyRow('Sin recomendaciones.'));
+  if (!recs.length) recList.appendChild(emptyRow('Sin recomendaciones sugeridas.'));
   recs.forEach((rec, idx) => {
-    const row = document.createElement('div');
-    row.className = 'rec-item reveal';
-    row.style.setProperty('--d', idx);
-    const num = document.createElement('span');
-    num.className = 'rec-num';
-    num.textContent = String(idx + 1);
-    const text = document.createElement('div');
-    text.textContent = rec;
-    row.appendChild(num);
-    row.appendChild(text);
-    recList.appendChild(row);
+    const card = document.createElement('div');
+    card.className = 'p-4 bg-white rounded-2xl border border-gray-100/90 shadow-sm flex items-start gap-3.5 reveal hover:border-purple-200 transition-all';
+    card.style.setProperty('--d', idx);
+    card.innerHTML = `
+      <div class="w-7 h-7 rounded-xl bg-purple-50 text-tech-purple font-mono font-extrabold text-xs flex items-center justify-center shrink-0 border border-purple-100/80 mt-0.5 shadow-sm">
+        #${idx + 1}
+      </div>
+      <div class="text-xs sm:text-sm text-navy leading-relaxed font-medium">
+        ${escapeHtml(rec)}
+      </div>
+    `;
+    recList.appendChild(card);
   });
 
-  document.getElementById('checklistChip').textContent = `${checklist.length - checklistIssues}/${checklist.length} ✓`;
+  // 3. Checklist Normativo (Separación limpia de título e ISO ref badge)
+  document.getElementById('checklistChip').textContent = `${checklist.length - checklistIssues}/${checklist.length} Correctos`;
   const checklistEl = document.getElementById('checklist');
   checklistEl.innerHTML = '';
   if (!checklist.length) checklistEl.appendChild(emptyRow('Sin checklist disponible.'));
   checklist.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'check-item reveal';
-    row.style.setProperty('--d', idx);
-    const ico = document.createElement('span');
-    ico.className = `check-ico ${checkIcoClass(item.status)}`;
-    ico.textContent = checkIcoSymbol(item.status);
-    const label = document.createElement('span');
-    label.textContent = item.item;
-    const ref = document.createElement('span');
-    ref.className = 'check-ref';
-    ref.textContent = item.ref || '';
-    row.appendChild(ico);
-    row.appendChild(label);
-    row.appendChild(ref);
-    checklistEl.appendChild(row);
+    const card = document.createElement('div');
+    card.className = 'p-3.5 bg-white rounded-2xl border border-gray-100/90 shadow-sm flex items-center justify-between gap-3 reveal hover:border-gray-200 transition-all';
+    card.style.setProperty('--d', idx);
+
+    let statusIco = '';
+    if (item.status === 'ok') {
+      statusIco = `<div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">✓</div>`;
+    } else if (item.status === 'warn') {
+      statusIco = `<div class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">!</div>`;
+    } else {
+      statusIco = `<div class="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">✕</div>`;
+    }
+
+    const refBadge = item.ref
+      ? `<span class="px-2.5 py-1 rounded-lg bg-blue-50/80 text-kinedrik-blue font-mono font-bold text-[11px] border border-blue-100 shrink-0 ml-auto">${escapeHtml(item.ref)}</span>`
+      : '';
+
+    card.innerHTML = `
+      <div class="flex items-center gap-3 min-w-0 flex-1">
+        ${statusIco}
+        <span class="font-semibold text-navy text-xs sm:text-sm leading-snug truncate" title="${escapeHtml(item.item)}">
+          ${escapeHtml(item.item)}
+        </span>
+      </div>
+      ${refBadge}
+    `;
+
+    checklistEl.appendChild(card);
   });
 
+  // 4. Secciones Conformes
   document.getElementById('correctChip').textContent = String(correct.length);
   const correctEl = document.getElementById('correctList');
   correctEl.innerHTML = '';
-  if (!correct.length) correctEl.appendChild(emptyRow('Sin apartados marcados como correctos.'));
+  if (!correct.length) correctEl.appendChild(emptyRow('Sin apartados marcados como totalmente conformes.'));
   correct.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'check-item reveal';
-    row.style.setProperty('--d', idx);
-    const ico = document.createElement('span');
-    ico.className = 'check-ico check-ok';
-    ico.textContent = '✓';
-    const label = document.createElement('span');
-    label.textContent = item;
-    row.appendChild(ico);
-    row.appendChild(label);
-    correctEl.appendChild(row);
+    const card = document.createElement('div');
+    card.className = 'p-3.5 bg-white rounded-2xl border border-gray-100/90 shadow-sm flex items-center gap-3 reveal';
+    card.style.setProperty('--d', idx);
+    card.innerHTML = `
+      <div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">✓</div>
+      <span class="font-semibold text-navy text-xs sm:text-sm leading-snug flex-1">
+        ${escapeHtml(item)}
+      </span>
+      <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-100 shrink-0">Conforme</span>
+    `;
+    correctEl.appendChild(card);
   });
 }
 
