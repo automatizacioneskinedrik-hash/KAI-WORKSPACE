@@ -27,11 +27,15 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB, matches the reviewed BEP prototype's stated limit
 });
 
+const publicDir = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, '..', 'dist')
+  : path.join(__dirname, '..');
+
 app.disable('x-powered-by');
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(publicDir));
 
 const analyzeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
