@@ -11,6 +11,20 @@ const state = {
   role: 'estudiante'
 };
 
+/* ===== Utilidad de Autenticación ===== */
+// Extrae el token de Google o el de Administrador para enviarlo en cada petición
+function getAuthHeaders(isJson = false) {
+  const headers = {};
+  const googleToken = sessionStorage.getItem('kinedrik_token');
+  const adminToken = localStorage.getItem('kaiAdminToken');
+  
+  if (googleToken) headers['Authorization'] = `Bearer ${googleToken}`;
+  if (adminToken) headers['x-admin-token'] = adminToken;
+  if (isJson) headers['Content-Type'] = 'application/json';
+  
+  return headers;
+}
+
 /* ===== Navegación ===== */
 const crumbs = {
   home: '<b>AI Skills</b>',
@@ -47,7 +61,6 @@ function goTo(id) {
 function revealIn(scope) {
   const els = (scope || document).querySelectorAll('.reveal:not(.in)');
   els.forEach(el => el.classList.remove('in'));
-  // force reflow so the transition replays even if the nodes were already in the DOM
   void (scope || document.body).offsetHeight;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => els.forEach(el => el.classList.add('in')));
@@ -73,7 +86,7 @@ function animateNumber(el, target, duration = 700) {
 async function checkApiStatus() {
   const chip = document.getElementById('apiStatusChip');
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch('/api/health'); // Public endpoint
     const data = await res.json();
     if (data.hasApiKey) {
       chip.textContent = `● IA conectada · ${data.model || 'gpt-4o-mini'}`;
@@ -188,7 +201,11 @@ async function startAnalysis() {
 
   let data = null;
   try {
-    const res = await fetch('/api/analyze', { method: 'POST', body: form });
+    const res = await fetch('/api/analyze', { 
+      method: 'POST', 
+      headers: getAuthHeaders(), // Inyecta Firebase o Admin token automáticamente
+      body: form 
+    });
     data = await res.json();
     clearTimeout(stepTimer);
 
@@ -311,7 +328,7 @@ function renderResults(record) {
     recList.appendChild(card);
   });
 
-  // 3. Checklist Normativo (Separación limpia de título e ISO ref badge)
+  // 3. Checklist Normativo
   document.getElementById('checklistChip').textContent = `${checklist.length - checklistIssues}/${checklist.length} Correctos`;
   const checklistEl = document.getElementById('checklist');
   checklistEl.innerHTML = '';
@@ -481,7 +498,7 @@ async function ask(question) {
   try {
     const res = await fetch(`/api/analyses/${record.id}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify({ riskId, question })
     });
     const data = await res.json();
@@ -502,9 +519,11 @@ async function ask(question) {
 /* ===== History ===== */
 async function loadHistory(render) {
   try {
-    const res = await fetch('/api/analyses');
+    const res = await fetch('/api/analyses', {
+      headers: getAuthHeaders()
+    });
     const list = await res.json();
-    document.getElementById('historyBadge').textContent = String(list.length);
+    document.getElementById('historyBadge').textContent = String(list.length || 0);
     if (render) renderHistory(list);
     return list;
   } catch {
@@ -587,7 +606,7 @@ function renderHistory(list) {
 }
 
 async function openHistoryItem(id) {
-  const res = await fetch(`/api/analyses/${id}`);
+  const res = await fetch(`/api/analyses/${id}`, { headers: getAuthHeaders() });
   if (!res.ok) return;
   const record = await res.json();
   state.currentRecord = record;
@@ -597,7 +616,7 @@ async function openHistoryItem(id) {
 
 /* ===== Home stats ===== */
 async function loadHomeStats() {
-  const list = await loadHistory(false);
+  const list = await loadHistory(false) || [];
   animateNumber(document.getElementById('statCount'), list.length, 600);
 
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -624,7 +643,7 @@ async function loadHomeStats() {
 async function loadProgress() {
   let stats;
   try {
-    const res = await fetch('/api/stats');
+    const res = await fetch('/api/stats', { headers: getAuthHeaders() });
     stats = await res.json();
   } catch {
     return;
@@ -735,7 +754,7 @@ async function loadProgress() {
     }));
   });
 
-  // 4. Riesgos más frecuentes (Arreglo del solapamiento del número #1, #2...)
+  // 4. Riesgos más frecuentes
   const topEl = document.getElementById('progTopRisks');
   topEl.innerHTML = '';
   if (!stats.topRisks || !stats.topRisks.length) {
@@ -770,9 +789,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-/* ===== Admin: system prompt =====
-   Sin backend de autenticación real todavía: el token de admin no vive en
-   el código, lo pega el propio admin y se guarda solo en su navegador. */
+/* ===== Admin: system prompt ===== */
 function getAdminToken() {
   return localStorage.getItem('kaiAdminToken') || '';
 }
@@ -834,7 +851,7 @@ async function saveAdminPrompt() {
   }
 }
 
-/* ===== Auth (login básico de demo, solo cliente — sin backend de usuarios real todavía) ===== */
+/* ===== Auth (Lógica compartida UI Form + Firebase) ===== */
 const DEMO_ACCOUNTS = {
   testing: { pass: '123', role: 'estudiante' },
   admin: { pass: 'kinedrik2026', role: 'admin' }
@@ -846,9 +863,10 @@ function showApp(username, role) {
   document.getElementById('appRoot').hidden = false;
   document.getElementById('userName').textContent = username;
   document.getElementById('userAvatar').textContent = username.slice(0, 2).toUpperCase();
-  document.getElementById('userRole').textContent = state.role === 'admin' ? 'Administrador' : 'Estudiante · MVP';
+  document.getElementById('userRole').textContent = state.role === 'admin' ? 'Administrador' : 'Usuario verificado';
   document.getElementById('navAdminSection').hidden = state.role !== 'admin';
   document.getElementById('navAdmin').hidden = state.role !== 'admin';
+  
   checkApiStatus();
   loadHomeStats();
   loadHistory(false);
@@ -874,8 +892,14 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
+  // Limpiar credenciales locales de Demo
   sessionStorage.removeItem('kaiUser');
   sessionStorage.removeItem('kaiRole');
+  // Limpiar credenciales de Google
+  sessionStorage.removeItem('kinedrik_token');
+  sessionStorage.removeItem('kinedrik_uid');
+  sessionStorage.removeItem('kinedrik_user');
+  
   document.getElementById('loginForm').reset();
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('appRoot').hidden = true;
@@ -884,8 +908,19 @@ function handleLogout() {
 
 /* ===== Init ===== */
 const savedUser = sessionStorage.getItem('kaiUser');
+const kinedrikUserStr = sessionStorage.getItem('kinedrik_user');
+
 if (savedUser && DEMO_ACCOUNTS[savedUser]) {
+  // Priorizar ingreso por sesión Form Demo
   showApp(savedUser, sessionStorage.getItem('kaiRole') || DEMO_ACCOUNTS[savedUser].role);
+} else if (kinedrikUserStr) {
+  // Priorizar ingreso por sesión Google
+  try {
+    const kUser = JSON.parse(kinedrikUserStr);
+    showApp(kUser.name || 'Usuario', 'user');
+  } catch (e) {
+    console.error("Error cargando sesión de Google", e);
+  }
 }
 
 /* ===== Export to window for inline HTML handlers ===== */
@@ -906,6 +941,6 @@ Object.assign(window, {
   loadHistory,
   loadProgress,
   loadHomeStats,
-  loadAdminPrompt
+  loadAdminPrompt,
+  showApp
 });
-
