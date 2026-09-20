@@ -228,7 +228,7 @@ function pickValid(value, allowed, fallback) {
 
 // Los navegadores envían el nombre de archivo del multipart en UTF-8, pero
 // busboy/multer lo decodifican como latin1 por defecto: sin esto, cualquier
-// tilde o ñ en el nombre llega corrupta ("transformaciÃ³n").
+// tilde o ñ en el nombre llega corrupta ("transformación").
 function fixFileNameEncoding(name) {
   try {
     return Buffer.from(name, 'latin1').toString('utf8');
