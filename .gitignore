@@ -7,7 +7,7 @@ uploads/*
 !uploads/.gitkeep
 *.log
 .DS_Store
-
+firebase-key.json
 # working docs used only to scope this MVP, not part of the app
 *.csv
 *.docx

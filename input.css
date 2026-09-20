@@ -160,7 +160,6 @@ body {
   animation: pulseGlow 4s infinite ease-in-out;
 }
 
-/* ===== SIDEBAR (Estilo intacto con retoques premium) ===== */
 .app { display: flex; height: 100vh; overflow: hidden; }
 .sidebar {
   width: 250px;
