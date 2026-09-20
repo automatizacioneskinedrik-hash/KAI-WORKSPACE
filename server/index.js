@@ -21,14 +21,6 @@ const TIPOS = ['EIR', 'BEP', 'IFC / Modelo BIM', 'Memoria técnica', 'Verificaci
 const NORMATIVAS = ['ISO 19650-2:2018', 'ISO 19650-1:2018', 'UNE-EN 17412', 'PAS 1192 (legado)'];
 const ESPECIALIDADES = ['BIM Management', 'Estructuras', 'MEP', 'Arquitectura'];
 const NIVELES = ['Rápido', 'Estándar', 'Exhaustivo'];
-const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { getAuth } = require('firebase-admin/auth');
-
-initializeApp({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT || 'tu-proyecto-id'
-});
-const firestore = getFirestore();
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -65,67 +57,61 @@ function trialStatus() {
   return { used, limit: FREE_TRIAL_LIMIT, remaining: Math.max(0, FREE_TRIAL_LIMIT - used) };
 }
 
-async function requireAuth(req, res, next) {
-  //Verificación de Administrador
-  const adminHeader = req.get('x-admin-token');
-  if (adminHeader && adminHeader === process.env.ADMIN_TOKEN) {
-    req.user = { uid: 'admin_system', role: 'admin' };
-    return next();
-  }
-
-  //Verificación de Usuario Google
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Acceso no autorizado. Provea credenciales.', code: 'UNAUTHORIZED' });
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-  try {
-    const decodedToken = await getAuth().verifyIdToken(token);
-    req.user = { uid: decodedToken.uid, role: 'user', email: decodedToken.email };
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Token inválido o expirado.', code: 'INVALID_TOKEN' });
-  }
-}
-
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, hasApiKey: hasApiKey(), model: process.env.OPENAI_MODEL || 'gpt-4o-mini', trial: trialStatus() });
 });
 
-app.get('/api/analyses', requireAuth, async (req, res) => {
-  try {
-    // Si es admin, podríamos decidir retornar todo, pero por ahora aislamos por el UID inyectado
-    const snapshot = await firestore.collection('users').doc(req.user.uid).collection('analyses')
-      .orderBy('createdAt', 'desc').get();
-      
-    const analyses = [];
-    snapshot.forEach(doc => analyses.push({ id: doc.id, ...doc.data() }));
-    res.json(analyses);
-  } catch (err) {
-    handleApiError(res, err);
-  }
+app.get('/api/analyses', (req, res) => {
+  res.json(db.listAnalyses());
 });
 
-app.get('/api/analyses/:id', requireAuth, async (req, res) => {
-  try {
-    const doc = await firestore.collection('users').doc(req.user.uid).collection('analyses').doc(req.params.id).get();
-    if (!doc.exists) return res.status(404).json({ error: 'Análisis no encontrado.' });
-    res.json({ id: doc.id, ...doc.data() });
-  } catch (err) {
-    handleApiError(res, err);
-  }
+app.get('/api/analyses/:id', (req, res) => {
+  const record = db.getAnalysis(req.params.id);
+  if (!record) return res.status(404).json({ error: 'Análisis no encontrado.' });
+  res.json(record);
 });
 
-app.post('/api/analyze', analyzeLimiter, requireAuth, upload.single('file'), async (req, res) => {
+app.post('/api/analyze', analyzeLimiter, upload.single('file'), async (req, res) => {
   try {
-    
-    const recordId = crypto.randomUUID();
+    const trial = trialStatus();
+    if (trial.remaining <= 0) {
+      return res.status(402).json({
+        error: `Has alcanzado el límite de tu prueba gratuita (${FREE_TRIAL_LIMIT} análisis). Contacta con nosotros para continuar con un plan de pago.`,
+        code: 'TRIAL_LIMIT_REACHED',
+        trial
+      });
+    }
+
+    if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo.' });
+
+    const tipo = pickValid(req.body.tipo, TIPOS, 'BEP');
+    const normativa = pickValid(req.body.normativa, NORMATIVAS, 'ISO 19650-2:2018');
+    const especialidad = pickValid(req.body.especialidad, ESPECIALIDADES, 'BIM Management');
+    const nivel = pickValid(req.body.nivel, NIVELES, 'Estándar');
+    const fileName = fixFileNameEncoding(req.file.originalname);
+
+    const { text, truncated, fullLength } = await extractText(req.file.buffer, req.file.mimetype, fileName);
+
+    const { system, user } = buildAnalysisPrompt({
+      tipo, normativa, especialidad, nivel,
+      fileName,
+      text, truncated,
+      customInstructions: config.getConfig().customInstructions
+    });
+
+    const { result, usage, model } = await callAnalysisJson({ system, user });
+
+    const riskCounts = { alto: 0, medio: 0, bajo: 0 };
+    for (const r of result.risks || []) {
+      if (riskCounts[r.severity] !== undefined) riskCounts[r.severity]++;
+    }
+
     const record = {
+      id: crypto.randomUUID(),
       fileName,
       fileSizeBytes: req.file.size,
       tipo, normativa, especialidad, nivel,
-      createdAt: new Date().toISOString(), 
+      createdAt: new Date().toISOString(),
       docTextLength: fullLength,
       docTruncated: truncated,
       model,
@@ -133,40 +119,42 @@ app.post('/api/analyze', analyzeLimiter, requireAuth, upload.single('file'), asy
       score: result.score,
       riskCounts,
       result,
-      chatLogs: {} 
+      chatLogs: {}
     };
 
-    await firestore.collection('users').doc(req.user.uid).collection('analyses').doc(recordId).set(record);
-    res.json({ id: recordId, ...record });
+    db.insertAnalysis(record);
+    res.json({ ...record, trial: trialStatus() });
   } catch (err) {
     handleApiError(res, err);
   }
 });
 
-app.post('/api/analyses/:id/chat', chatLimiter, requireAuth, async (req, res) => {
+app.post('/api/analyses/:id/chat', chatLimiter, async (req, res) => {
   try {
-    const analysisRef = firestore.collection('users').doc(req.user.uid).collection('analyses').doc(req.params.id);
-    const doc = await analysisRef.get();
-    if (!doc.exists) return res.status(404).json({ error: 'Análisis no encontrado.' });
+    const record = db.getAnalysis(req.params.id);
+    if (!record) return res.status(404).json({ error: 'Análisis no encontrado.' });
 
-    const record = doc.data();
-    // ... tu lógica de validación del riskId y pregunta intacta ...
+    const { riskId, question } = req.body || {};
+    if (!question || !question.trim()) return res.status(400).json({ error: 'Pregunta vacía.' });
+    if (question.length > 2000) return res.status(400).json({ error: 'Pregunta demasiado larga (máx. 2000 caracteres).' });
 
-    // ... llamada al LLM (callChat) ...
+    const risk = (record.result.risks || []).find(r => r.id === riskId);
+    if (!risk) return res.status(404).json({ error: 'Riesgo no encontrado en este análisis.' });
 
-    const newChatLog = {
-      question,
-      answer: content, // respuesta del LLM
-      at: new Date().toISOString(),
-      usage
-    };
+    const { system, user } = buildChatPrompt({
+      risk, question,
+      tipo: record.tipo, normativa: record.normativa,
+      docExcerpt: risk.quote,
+      customInstructions: config.getConfig().customInstructions
+    });
 
-    // Usar la actualización con notación de puntos o reescribiendo el objeto
+    const { content, usage } = await callChat({ system, user, json: false });
+
     const chatLogs = record.chatLogs || {};
-    if (!chatLogs[riskId]) chatLogs[riskId] = [];
-    chatLogs[riskId].push(newChatLog);
+    chatLogs[riskId] = chatLogs[riskId] || [];
+    chatLogs[riskId].push({ question, answer: content, at: new Date().toISOString(), usage });
 
-    await analysisRef.update({ chatLogs });
+    db.updateAnalysis(record.id, { chatLogs });
     res.json({ answer: content });
   } catch (err) {
     handleApiError(res, err);
@@ -232,34 +220,6 @@ app.post('/api/admin/prompt', requireAdmin, (req, res) => {
   const { customInstructions } = req.body || {};
   const updated = config.setCustomInstructions(customInstructions);
   res.json({ customInstructions: updated.customInstructions });
-});
-
-app.post('/api/auth/google', async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ error: 'Token requerido' });
-
-  try {
-    const decodedToken = await getAuth().verifyIdToken(token);
-    const { uid, name, email, picture } = decodedToken;
-    const userRef = firestore.collection('users').doc(uid);
-    const userDoc = await userRef.get();
-
-    const userData = {
-      uid, name, email, picture,
-      lastLogin: FieldValue.serverTimestamp()
-    };
-
-    if (!userDoc.exists) {
-      userData.createdAt = FieldValue.serverTimestamp();
-      await userRef.set(userData);
-    } else {
-      await userRef.update({ lastLogin: userData.lastLogin });
-    }
-
-    res.json(userData);
-  } catch (error) {
-    res.status(401).json({ error: 'Validación de token fallida' });
-  }
 });
 
 function pickValid(value, allowed, fallback) {
