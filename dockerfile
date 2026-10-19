@@ -7,7 +7,8 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+# tailwind.css no está en git (generado): hay que compilarlo antes del build de Vite, o la página sale sin estilos
+RUN npm run css:build && npm run build
 
 EXPOSE 8080
 
