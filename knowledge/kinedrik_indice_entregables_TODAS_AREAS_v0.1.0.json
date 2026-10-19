@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "producto": "KINEDRIK Índice de Entregables — 9 Áreas",
+    "version": "0.1.0",
+    "fuente": "Los 9 Pliegos de Prescripciones Técnicas (PPT) reales de KINEDRIK, Google Drive, autor: Manus AI — uno por área",
+    "nota_metodo": "Entregables transcritos literalmente de la sección 'Entregables:' de cada lote de cada PPT real. Cero invención: incluye siempre memoria de mediciones, cuadro de precios, presupuesto y cronograma (Lote F) por área, que es lo que se pidió cubrir explícitamente."
+  },
+  "areas": [
+    {
+      "area_codigo": "AMETBIM", "area_nombre": "BIM",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_BIM.docx",
+      "lote_F_cronograma_presupuesto": ["Memoria de mediciones (extraídas de modelos BIM o estimadas)", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]
+    },
+    {
+      "area_codigo": "AINFRAT", "area_nombre": "Infraestructura Civil y de Transporte",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Infraestructura.docx",
+      "tipologias": ["Diseño y Construcción de Infraestructuras Viales", "Infraestructuras Ferroviarias y Transporte Urbano", "Diseño, Construcción y Mantenimiento de Aeropuertos", "Diseño y Construcción de Puertos y Obras Marítimas", "Gestión del Tráfico, Transportes y Seguridad Vial"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico", "Mapas temáticos (tráfico, estado de firmes, riesgos)", "Bases de datos de información recopilada", "Resultados de aforos y encuestas de movilidad"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de ingeniería", "Memorias de cálculo", "Especificaciones técnicas de materiales y ejecución", "Modelos de simulación o BIM (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos (constructivos, operacionales, ambientales) y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["Normas de Trazado", "Instrucción de Firmes", "Reglamento General de Circulación Ferroviaria", "Normas OACI", "Ley de Puertos del Estado", "ISO 9001"]
+    },
+    {
+      "area_codigo": "AENERPM", "area_nombre": "Energía y Minas",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Energía_y_Minas.docx",
+      "tipologias": ["Diseño e Implementación de Proyectos de Energías Renovables", "Exploración y Evaluación de Yacimientos Minerales/Petrolíferos", "Diseño y Optimización de Operaciones Mineras", "Gestión Ambiental y Cierre de Minas", "Eficiencia Energética en la Industria"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico", "Mapas temáticos (yacimientos, radiación solar, viento, consumo energético)", "Bases de datos de información recopilada"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de ingeniería", "Memorias de cálculo", "Especificaciones técnicas de materiales y equipos", "Modelos de simulación (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["Ley de Transición Energética", "Ley de Minas", "ISO 50001", "ISO 14001"]
+    },
+    {
+      "area_codigo": "AOHHEAM", "area_nombre": "Obras Hidráulicas y Medio Ambiente",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Obras_Hidráulicas.docx",
+      "tipologias": ["Diseño y Optimización de Redes de Abastecimiento y Saneamiento", "Modelado Hidráulico y Gestión de Riesgos de Inundación", "Evaluación de Impacto Ambiental de Infraestructuras Hidráulicas", "Diseño de Presas, Embalses y Estructuras de Regulación", "Gestión Integrada de Recursos Hídricos en Zonas Áridas"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico", "Mapas temáticos (redes, cuencas, zonas inundables)", "Bases de datos de información recopilada"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de ingeniería", "Memorias de cálculo", "Especificaciones técnicas de materiales y equipos", "Modelos hidráulicos o BIM (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["Ley de Aguas", "Directiva Marco del Agua", "ISO 9001", "ISO 14001"]
+    },
+    {
+      "area_codigo": "ARQYURB", "area_nombre": "Arquitectura y Urbanismo",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Arquitectura_y_Urbanismo.docx",
+      "tipologias": ["Diseño Arquitectónico Sostenible", "Planificación y Diseño de Smartcities", "Rehabilitación Urbana y Regeneración de Espacios Públicos", "Urbanismo Ambientalmente Sostenible", "Diseño de Interiores y Espacios Flexibles"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico urbano/arquitectónico", "Mapas temáticos (usos, densidades, flujos, riesgos)", "Bases de datos de información recopilada", "Análisis DAFO"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales y volumétricos de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de arquitectura y urbanismo", "Memorias de cálculo", "Especificaciones técnicas de materiales y ejecución", "Modelos BIM o de simulación (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos (constructivos, operacionales, ambientales, urbanísticos) y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["Ley del Suelo", "Planes Generales de Ordenación Urbana", "Código Técnico de la Edificación (CTE)", "ISO 9001", "LEED", "BREEAM", "VERDE"]
+    },
+    {
+      "area_codigo": "AINDAPP", "area_nombre": "Ingeniería Industrial",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Ingeniería_Industrial.docx",
+      "tipologias": ["Optimización y Gestión del Mantenimiento Industrial", "Diseño y Rediseño de Plantas Industriales", "Automatización y Control de Procesos Industriales", "Ingeniería Eléctrica Aplicada en Entornos Industriales", "Mejora de Procesos y Lean Manufacturing"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico", "Diagramas de flujo de valor (VSM)", "Análisis de causa raíz (Ishikawa, 5 Porqués)", "Bases de datos de información operativa"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de certificaciones y homologaciones necesarias"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de ingeniería", "Memorias de cálculo", "Especificaciones técnicas de equipos y procesos", "Modelos de simulación (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["OSHA", "ISO 9001", "ISO 14001", "ISO 50001", "ANSI", "IEC", "UNE"]
+    },
+    {
+      "area_codigo": "AGESDIR", "area_nombre": "Gestión y Financiación de Empresas y Proyectos",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Gestión_y_Financiación_de_Empresas_y_Proyectos.docx",
+      "tipologias": ["Plan de Negocio y Viabilidad de Nuevas Empresas", "Gestión Estratégica y Optimización de Empresas Existentes", "Gerencia de Proyectos de Ingeniería y Construcción", "Gestión Financiera y Valoración de Proyectos", "Dirección de Agronegocios y Proyectos Agropecuarios"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico estratégico/financiero", "Análisis de mercado", "Análisis de la competencia", "Bases de datos de información relevante"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo y regulatorio", "Matriz de requisitos legales y técnicos aplicables", "Identificación de licencias y certificaciones necesarias"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas estratégicas/operativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación estratégica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Plan de negocio/proyecto detallado", "Diseño organizacional", "Diseño de procesos clave", "Modelos financieros completos"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones de recursos", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de implementación", "Proyecciones de flujos de caja"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económico-financiera y de sostenibilidad", "Matriz de riesgos y plan de mitigación", "Conclusiones sobre la viabilidad integral y recomendaciones estratégicas"]}
+      },
+      "normas_citadas_en_ppt": ["NIIF", "US GAAP", "PMBOK", "ISO 21500", "ISO 9001"],
+      "nota": "Es el área de PMBOK. El usuario indica que PMBOK 'ya está cargado' en KINEDRIK_Advisor_AI/normativa_RAG (archivo fuente: 996503163-Pmbok-2025-8-Traducido-a-ESP.pdf en Drive, 23 MB) — no se ha vuelto a chunkear aquí para no duplicar trabajo ya hecho; queda pendiente confirmar dónde vive ese chunking ya realizado."
+    },
+    {
+      "area_codigo": "ATRDIGI", "area_nombre": "Transformación Digital",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Transformación_Digital.docx",
+      "tipologias": ["Big Data y Analítica Avanzada", "IA Aplicada y Machine Learning (ML)", "Automatización Inteligente e Implementación de Soluciones IA", "Ciberseguridad y Resiliencia Digital", "Implementación de Soluciones de IA Generativa (GenAI)"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico digital", "Mapa de la arquitectura de sistemas y datos", "Análisis de madurez digital", "Identificación de riesgos de ciberseguridad", "Análisis de causa raíz de problemas digitales", "Bases de datos de información operativa y de seguridad"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables (con fechas de entrada en vigor y obligaciones)", "Identificación de certificaciones y homologaciones necesarias"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida", "Resultados de PoC o prototipo (si aplica)"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de arquitectura y diseño", "Especificaciones técnicas detalladas", "Modelos de datos y de procesos", "Prototipos (si aplica)", "Documentación de diseño de seguridad"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado (CAPEX/OPEX)", "Cronograma de ejecución", "Curva de inversión (flujo de caja proyectado)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, de impacto y de sostenibilidad digital", "Matriz de riesgos (técnicos, operativos, de seguridad, éticos) y plan de mitigación", "Conclusiones sobre la sostenibilidad integral y la viabilidad a largo plazo"]}
+      },
+      "normas_citadas_en_ppt": ["RGPD", "AI Act (Ley de Inteligencia Artificial)", "Esquema Nacional de Seguridad (ENS)", "Directiva NIS2", "ISO/IEC 42001", "ISO/IEC 27001", "ISO/IEC 20546"]
+    },
+    {
+      "area_codigo": "AESTGEO", "area_nombre": "Estructuras y Geotecnia (MGEOCI)",
+      "fuente_ppt": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_Estructuras_y_Geotecnia_(MGEOC).docx",
+      "tipologias": ["Diseño y Cálculo de Estructuras de Obra Civil", "Geotecnia y Diseño de Cimentaciones", "Rehabilitación y Refuerzo de Estructuras Existentes", "Interacción Suelo-Estructura y Dinámica Estructural", "Eficiencia Energética en Estructuras"],
+      "lotes": {
+        "A": {"nombre": "Diagnóstico del Sistema", "entregables": ["Informe de diagnóstico", "Mapas geológicos/geotécnicos", "Resultados de ensayos", "Informe patológico (si aplica)", "Bases de datos de información recopilada"]},
+        "B": {"nombre": "Análisis Normativo", "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios"]},
+        "C": {"nombre": "Formulación de Alternativas", "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de cada opción", "Tabla comparativa de alternativas"]},
+        "D": {"nombre": "Selección de Solución", "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"]},
+        "E": {"nombre": "Diseño y Dimensionamiento", "entregables": ["Conjunto completo de planos de ingeniería", "Memorias de cálculo", "Especificaciones técnicas de materiales y ejecución", "Modelos de cálculo (si aplica)"]},
+        "F": {"nombre": "Cuantificación Técnica y Presupuesto", "entregables": ["Memoria de mediciones", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"]},
+        "G": {"nombre": "Evaluación de Viabilidad", "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos (estructurales, geotécnicos, constructivos) y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"]}
+      },
+      "normas_citadas_en_ppt": ["Código Técnico de la Edificación (CTE)", "Eurocódigos", "ISO 9001"]
+    }
+  ]
+}

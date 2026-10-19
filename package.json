@@ -6,9 +6,11 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
+    "css:build": "tailwindcss -i ./input.css -o ./tailwind.css --minify",
+    "css:watch": "tailwindcss -i ./input.css -o ./tailwind.css --watch",
     "dev:server": "node --watch server/index.js",
     "dev:client": "vite",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "concurrently \"npm run dev:server\" \"npm run css:watch\"",
     "build": "vite build"
   },
   "dependencies": {

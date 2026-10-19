@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "producto": "KINEDRIK Verificación de Modelos — conexión Normativa RAG ↔ Prototipo (kai-workspace-prototipo.html)",
+    "version": "0.1.0",
+    "proposito": "El estudiante pidió conectar la base normativa a lo que ya muestra el prototipo 'AI Technical Reviewer': 6 riesgos (R-01…R-06) que citan cláusulas ISO 19650 sobre un modelo/BEP subido. Este archivo verifica, cláusula por cláusula, si esas citas del prototipo son reales contra la KB (kinedrik_normativa_kb_BIM_v0.1.0.json) y las deja ligadas a un chunk_id trazable — así el motor de verificación de modelos deja de citar normas 'de memoria' y pasa a citar la KB.",
+    "metodo": "Para cada riesgo del prototipo: se busca su apartado citado en la KB real; si existe y el contenido es coherente con lo que el prototipo afirma, se marca VERIFICADO y se liga el chunk_id; si la norma citada no está en el corpus actual (11 normas BIM) o el apartado no fue localizado, se marca REQUIERE VALIDACIÓN — nunca se da por buena una cita sin comprobarla."
+  },
+  "riesgos_verificados": [
+    {
+      "riesgo_id": "R-01", "titulo_prototipo": "Matriz de responsabilidades incompleta",
+      "cita_prototipo": "ISO 19650-2:2018 · Cláusula 5.1.4",
+      "verificacion": "VERIFICADO",
+      "chunk_id": "UNE-EN_ISO_19650-2_5.1.4",
+      "nota": "El apartado 5.1.4 real se titula 'Establecer la norma de información del proyecto', no trata específicamente de la matriz de responsabilidades — esa matriz aparece en 5.4.2 y en el Anexo A. La cláusula correcta para esta afirmación es 5.4.2 / Anexo A, no 5.1.4. REQUIERE CORRECCIÓN EN EL PROTOTIPO."
+    },
+    {
+      "riesgo_id": "R-02", "titulo_prototipo": "MIDP desincronizado con hitos contractuales",
+      "cita_prototipo": "ISO 19650-2:2018 · Cláusula 5.4.2",
+      "verificacion": "VERIFICADO PARCIALMENTE",
+      "chunk_id": "UNE-EN_ISO_19650-2_5.4.2",
+      "nota": "5.4.2 real ('Establecer la matriz detallada de responsabilidades del equipo de desarrollo') sí es la cláusula de la matriz de responsabilidades (coincide con lo que R-01 debería citar), pero NO trata de sincronización de hitos del MIDP con el programa contractual — eso corresponde más bien a 5.4.4/5.4.5 (programas de desarrollo de información). Cita cruzada con R-01: parecen intercambiadas."
+    },
+    {
+      "riesgo_id": "R-03", "titulo_prototipo": "Sin procedimiento de verificación de modelos",
+      "cita_prototipo": "ISO 19650-2:2018 · Cláusula 5.6.3",
+      "verificacion": "VERIFICADO",
+      "chunk_id": "UNE-EN_ISO_19650-2_5.6.3",
+      "nota": "5.6.3 real se titula 'Realizar un control de calidad' — coincide con la afirmación del prototipo sobre verificación de modelos antes de compartir en el CDE. Esta es la cita correctamente verificada del set."
+    },
+    {
+      "riesgo_id": "R-04", "titulo_prototipo": "LOD/LOIN sin criterios de aceptación medibles",
+      "cita_prototipo": "UNE-EN 17412-1 / ISO 19650-1 · Cláusula 11",
+      "verificacion": "PARCIAL — REQUIERE VALIDACIÓN",
+      "chunk_id": "UNE-EN_ISO_19650-1_11.2",
+      "nota": "UNE-EN 17412-1 (norma específica de LOIN) NO está en el corpus actual de 11 normas BIM — no se puede verificar esa parte de la cita. La parte 'ISO 19650-1 Cláusula 11' sí es real: el apartado 11.2 ('Nivel de información necesario') trata exactamente de esto y coincide en sustancia con la afirmación del prototipo. Recomendado: añadir UNE-EN 17412-1 al corpus para verificar completamente esta cita."
+    },
+    {
+      "riesgo_id": "R-05", "titulo_prototipo": "Convención de nomenclatura contradice el EIR",
+      "cita_prototipo": "ISO 19650-2:2018 · Anexo A",
+      "verificacion": "VERIFICADO",
+      "chunk_id": "UNE-EN_ISO_19650-2_Anexo_A",
+      "nota": "Anexo A real se titula 'Matriz de asignación de gestión de la información' — trata de asignación de responsabilidades, no de convenciones de nomenclatura de archivos (eso está más bien en 19650-2 §6.1 o en el Anexo A de UNE-EN ISO 19650-1, que sí ilustra estructuras de contenedores). Cita del prototipo imprecisa: el Anexo A de la parte 2 no es sobre nomenclatura."
+    },
+    {
+      "riesgo_id": "R-06", "titulo_prototipo": "Formato de intercambio no versionado (IFC sin esquema)",
+      "cita_prototipo": "ISO 19650-2:2018 · Cláusula 5.3.2",
+      "verificacion": "NO VERIFICADO",
+      "chunk_id": "UNE-EN_ISO_19650-2_5.3.2",
+      "nota": "5.3.2 real se titula 'Establecer el plan de ejecución del BIM del equipo de desarrollo (antes de la adjudicación)' — no trata de formatos ni esquemas de intercambio (IFC/MVD). Esa materia corresponde a la norma UNE-EN ISO 19650-4 (Intercambio de información) o UNE-EN ISO 29481 (manual de intercambio), no a 5.3.2. Cita incorrecta en el prototipo."
+    }
+  ],
+  "conclusion": "De los 6 riesgos del prototipo, solo R-03 cita una cláusula real y temáticamente correcta. R-01/R-02 parecen tener sus citas cruzadas entre sí; R-04 es parcialmente verificable (falta una norma en el corpus); R-05 y R-06 citan cláusulas reales pero de contenido distinto al que afirman. Esto es exactamente lo que la conexión normativa-modelo debía revelar: el prototipo usaba números de cláusula con apariencia de rigor pero no verificados contra el texto real. A partir de ahora, cualquier hallazgo de verificación de modelos debe generarse citando un chunk_id de esta KB, nunca un número de cláusula escrito a mano.",
+  "recomendacion_ejecutable": "Sustituir el objeto `risks` fijo de kai-workspace-prototipo.html por una llamada a retrieve.py (o su equivalente) sobre kinedrik_normativa_kb_BIM_v0.1.0.json en el momento de detectar cada hallazgo, de modo que el campo 'norm' de cada riesgo se rellene con el chunk_id y extracto real — no con texto redactado a mano."
+}

@@ -2,12 +2,14 @@
    Frontend lógico: navegación de pantallas + llamadas reales al backend. */
 
 const state = {
+  area: null,
+  usecaseStep: 1,
   tipo: 'BEP',
   nivel: 'Estándar',
   selectedFile: null,
   currentRecord: null,
   currentRiskId: null,
-  trial: null,
+  credits: null,
   role: 'estudiante'
 };
 
@@ -15,7 +17,7 @@ const state = {
 // Extrae el token de Google o el de Administrador para enviarlo en cada petición
 function getAuthHeaders(isJson = false) {
   const headers = {};
-  const googleToken = sessionStorage.getItem('kinedrik_token');
+  const googleToken = sessionStorage.getItem('kinedrik_token') || sessionStorage.getItem('kaiDemoToken');
   const adminToken = localStorage.getItem('kaiAdminToken');
   
   if (googleToken) headers['Authorization'] = `Bearer ${googleToken}`;
@@ -34,6 +36,7 @@ const crumbs = {
   results: 'AI Skills <span class="sep">/</span> AI Technical Reviewer <span class="sep">/</span> <b>Informe</b>',
   history: '<b>Historial</b>',
   progress: '<b>Mi progreso</b>',
+  licitaciones: '<b>Licitaciones</b> <span class="sep">/</span> Opportunity Scout',
   admin: '<b>Administración</b> <span class="sep">/</span> System prompt'
 };
 
@@ -46,13 +49,12 @@ function goTo(id) {
 
   document.getElementById('navHome').classList.toggle('active', id === 'home' || id === 'usecase' || id === 'upload' || id === 'processing' || id === 'results');
   document.getElementById('navHistory').classList.toggle('active', id === 'history');
-  document.getElementById('navProgress').classList.toggle('active', id === 'progress');
   const navAdmin = document.getElementById('navAdmin');
   if (navAdmin) navAdmin.classList.toggle('active', id === 'admin');
 
-  if (id === 'history') loadHistory(true);
-  if (id === 'home') loadHomeStats();
-  if (id === 'progress') loadProgress();
+  if (id === 'usecase') showUsecaseStep(1);
+  if (id === 'history') { loadHistory(true); loadHistoryStats(); }
+  if (id === 'licitaciones') initLicitaciones();
   if (id === 'admin') loadAdminPrompt();
   revealIn(screen);
 }
@@ -95,34 +97,137 @@ async function checkApiStatus() {
       chip.textContent = '● Sin OPENAI_API_KEY — configura .env';
       chip.className = 'chip chip-red';
     }
-    if (data.trial) renderTrialChip(data.trial);
   } catch {
     chip.textContent = '● Backend no disponible';
     chip.className = 'chip chip-red';
   }
 }
 
-function renderTrialChip(trial) {
-  state.trial = trial;
+/* ===== Créditos: 15 por cuenta (prueba por IP), 15 por análisis; admin ilimitado ===== */
+async function loadCredits() {
+  try {
+    const res = await fetch('/api/credits', { headers: getAuthHeaders() });
+    if (res.ok) renderCredits(await res.json());
+  } catch {
+    // Sin saldo visible; el servidor valida de todos modos.
+  }
+}
+
+function renderCredits(c) {
+  if (!c) return;
+  state.credits = c;
   const chip = document.getElementById('trialChip');
-  chip.hidden = false;
-  chip.textContent = `Prueba gratuita: ${trial.used}/${trial.limit} análisis usados`;
-  chip.className = trial.remaining > 0 ? 'chip chip-gold' : 'chip chip-red';
   const analyzeBtn = document.getElementById('analyzeBtn');
-  if (trial.remaining <= 0) {
+  const enough = c.unlimited || c.balance >= c.cost;
+  chip.hidden = false;
+  chip.textContent = c.unlimited
+    ? 'Créditos: ilimitados'
+    : `Créditos: ${c.balance} · cuesta ${c.cost} por análisis`;
+  chip.className = enough ? (c.unlimited ? 'chip chip-green' : 'chip chip-gold') : 'chip chip-red';
+  if (!enough) {
     analyzeBtn.disabled = true;
-    analyzeBtn.title = 'Límite de prueba gratuita alcanzado';
+    analyzeBtn.title = 'Créditos insuficientes para un análisis';
   } else if (state.selectedFile) {
     analyzeBtn.disabled = false;
     analyzeBtn.title = '';
   }
 }
 
-/* ===== Use case ===== */
+/* ===== Use case & Area selection ===== */
+function selectArea(el) {
+  document.querySelectorAll('.area-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.area = el.dataset.area;
+
+  const status = document.getElementById('areaSelectionStatus');
+  if (status) {
+    status.className = 'text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5';
+    status.innerHTML = `✓ Área: <span class="font-bold">${escapeHtml(state.area)}</span>`;
+  }
+
+  const nextBtn = document.getElementById('usecaseNextBtn');
+  if (nextBtn) {
+    nextBtn.disabled = false;
+  }
+
+  const uploadBadge = document.getElementById('selectedAreaBadge');
+  if (uploadBadge) {
+    uploadBadge.textContent = state.area;
+  }
+}
+
+/* Wizard de 2 pasos: 1) Área técnica  2) Tipo de documento */
+function showUsecaseStep(step) {
+  state.usecaseStep = step;
+  const step1 = document.getElementById('usecaseStep1');
+  const step2 = document.getElementById('step2DocSection');
+  const backBtn = document.getElementById('usecaseBackBtn');
+  const nextBtn = document.getElementById('usecaseNextBtn');
+  const status = document.getElementById('areaSelectionStatus');
+
+  if (step === 2) {
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+    backBtn.classList.add('flex');
+    nextBtn.disabled = false;
+    nextBtn.innerHTML = 'Subir documento <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+    const areaLabel = document.getElementById('step2AreaLabel');
+    if (areaLabel) areaLabel.textContent = state.area || '—';
+    if (status) status.classList.add('hidden');
+    updateBepVisibility();
+  } else {
+    step1.classList.remove('hidden');
+    step2.classList.add('hidden');
+    backBtn.classList.add('hidden');
+    backBtn.classList.remove('flex');
+    nextBtn.disabled = !state.area;
+    nextBtn.innerHTML = 'Siguiente paso <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+    if (status) status.classList.remove('hidden');
+  }
+}
+
+function filterAreas(query) {
+  const q = (query || '').toLowerCase().trim();
+  let count = 0;
+  document.querySelectorAll('.area-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    const match = !q || text.includes(q);
+    card.style.display = match ? 'flex' : 'none';
+    if (match) count++;
+  });
+  const noMatch = document.getElementById('noAreaMatches');
+  if (noMatch) {
+    noMatch.classList.toggle('hidden', count > 0);
+  }
+}
+
+function confirmUsecaseStep() {
+  if (!state.area) {
+    alert('Debes seleccionar un Área Técnica obligatoria antes de continuar.');
+    return;
+  }
+  if (state.usecaseStep !== 2) {
+    showUsecaseStep(2);
+    return;
+  }
+  goTo('upload');
+}
+
 function selectUsecase(el) {
   document.querySelectorAll('.usecase').forEach(u => u.classList.remove('selected'));
   el.classList.add('selected');
   state.tipo = el.dataset.tipo;
+}
+
+/* Los tipos BEP solo aplican al área BIM: en otras áreas se ocultan y se pasa a EIR si estaban elegidos. */
+function updateBepVisibility() {
+  const esBim = state.area === 'BIM';
+  document.querySelectorAll('.usecase[data-tipo^="BEP"]').forEach(u => u.classList.toggle('hidden', !esBim));
+  if (!esBim && state.tipo && state.tipo.startsWith('BEP')) {
+    const eir = document.querySelector('.usecase[data-tipo="EIR"]');
+    if (eir) selectUsecase(eir);
+  }
 }
 
 /* ===== Upload ===== */
@@ -155,7 +260,8 @@ function onFilePicked(file) {
   document.getElementById('fileIcon').textContent = file.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC';
   document.getElementById('fileName').textContent = file.name;
   document.getElementById('fileMeta').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB · subido ahora`;
-  document.getElementById('analyzeBtn').disabled = false;
+  const hasCredits = !state.credits || state.credits.unlimited || state.credits.balance >= state.credits.cost;
+  document.getElementById('analyzeBtn').disabled = !hasCredits;
 }
 
 function selectLevel(el) {
@@ -194,6 +300,7 @@ async function startAnalysis() {
 
   const form = new FormData();
   form.append('file', state.selectedFile);
+  form.append('area', state.area || '');
   form.append('tipo', state.tipo);
   form.append('normativa', document.getElementById('normativa').value);
   form.append('especialidad', document.getElementById('especialidad').value);
@@ -210,15 +317,16 @@ async function startAnalysis() {
     clearTimeout(stepTimer);
 
     if (!res.ok) {
-      if (data.trial) renderTrialChip(data.trial);
+      if (data.credits) renderCredits(data.credits);
       throw new Error(data.error || 'Error desconocido al analizar el documento.');
     }
 
     steps.forEach(s => { s.classList.remove('running'); s.classList.add('done'); });
     state.currentRecord = data;
-    if (data.trial) renderTrialChip(data.trial);
+    if (data.credits) renderCredits(data.credits);
     renderResults(data);
-    setTimeout(() => goTo('results'), 400);
+    const nRisks = (data.result?.risks || []).length;
+    await playKaiReveal(`Informe listo · ${nRisks} ${nRisks === 1 ? 'riesgo detectado' : 'riesgos detectados'}`, () => goTo('results'));
   } catch (err) {
     clearTimeout(stepTimer);
     goTo('upload');
@@ -226,13 +334,40 @@ async function startAnalysis() {
   }
 }
 
+/* ===== Reveal K·AI Workspace: animación de marca al llegar la respuesta ===== */
+function playKaiReveal(subtitle, onCovered) {
+  const el = document.getElementById('kaiReveal');
+  if (!el) { onCovered?.(); return Promise.resolve(); }
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('kaiRevealSub').textContent = subtitle || 'Informe listo';
+  el.querySelectorAll('.kai-reveal-word span').forEach((s, i) => { s.style.animationDelay = `${250 + i * 45}ms`; });
+
+  // Reinicia las animaciones CSS si el overlay ya se mostró antes
+  el.classList.remove('show', 'leave');
+  el.hidden = false;
+  el.querySelectorAll('*').forEach(n => { n.style.animationName = 'none'; });
+  void el.offsetHeight;
+  el.querySelectorAll('*').forEach(n => { n.style.animationName = ''; });
+
+  return new Promise(resolve => {
+    requestAnimationFrame(() => el.classList.add('show'));
+    // Cambia de pantalla por debajo mientras el overlay la cubre
+    setTimeout(() => onCovered?.(), 400);
+    setTimeout(() => {
+      el.classList.add('leave');
+      setTimeout(() => { el.hidden = true; el.classList.remove('show', 'leave'); resolve(); }, 550);
+    }, reduced ? 900 : 2300);
+  });
+}
+
 /* ===== Results rendering ===== */
 function renderResults(record) {
   const r = record.result;
 
   document.getElementById('resTitle').textContent = `Informe de revisión · ${record.fileName}`;
+  const areaLabel = record.area || record.especialidad || 'Área General';
   document.getElementById('resSub').textContent =
-    `${record.normativa} · ${record.especialidad} · Nivel ${record.nivel} · ${new Date(record.createdAt).toLocaleString('es-ES')}`;
+    `Área: ${areaLabel} · ${record.tipo} · ${record.normativa} · Nivel ${record.nivel} · ${new Date(record.createdAt).toLocaleString('es-ES')}`;
 
   const score = Number.isFinite(r.score) ? Math.max(0, Math.min(100, Math.round(r.score))) : 0;
   const scoreNumEl = document.getElementById('scoreNum');
@@ -288,8 +423,8 @@ function renderResults(record) {
       : `<span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-extrabold text-[11px] border border-blue-200/80 flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Riesgo Bajo</span>`;
 
     const locationPill = risk.location
-      ? `<span class="px-2.5 py-1 rounded-lg bg-gray-100/80 text-gray-600 font-mono text-[11px] font-semibold flex items-center gap-1">📍 ${escapeHtml(risk.location)}</span>`
-      : `<span class="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-400 font-mono text-[11px]">Sección general</span>`;
+      ? `<span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 font-sans text-xs font-medium leading-snug flex items-center gap-1.5 min-w-0">📍 ${escapeHtml(risk.location)}</span>`
+      : `<span class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-500 font-sans text-xs font-medium">Sección general</span>`;
 
     card.innerHTML = `
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
@@ -348,13 +483,13 @@ function renderResults(record) {
     }
 
     const refBadge = item.ref
-      ? `<span class="px-2.5 py-1 rounded-lg bg-blue-50/80 text-kinedrik-blue font-mono font-bold text-[11px] border border-blue-100 shrink-0 ml-auto">${escapeHtml(item.ref)}</span>`
+      ? `<span class="px-3 py-1 rounded-lg bg-blue-50 text-kinedrik-blue font-sans font-semibold text-xs leading-snug border border-blue-100 shrink-0 ml-auto max-w-[45%] truncate" title="${escapeHtml(item.ref)}">${escapeHtml(item.ref)}</span>`
       : '';
 
     card.innerHTML = `
       <div class="flex items-center gap-3 min-w-0 flex-1">
         ${statusIco}
-        <span class="font-semibold text-navy text-xs sm:text-sm leading-snug truncate" title="${escapeHtml(item.item)}">
+        <span class="font-semibold text-navy text-sm leading-snug break-words" title="${escapeHtml(item.item)}">
           ${escapeHtml(item.item)}
         </span>
       </div>
@@ -571,6 +706,7 @@ function renderHistory(list) {
             ${escapeHtml(item.fileName)}
           </div>
           <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-gray-500">
+            <span class="px-2 py-0.5 rounded-md bg-purple-50 text-tech-purple font-semibold text-[11px] border border-purple-100/80">${escapeHtml(item.area || item.especialidad || 'Área General')}</span>
             <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 font-semibold text-[11px] border border-gray-200/60">${escapeHtml(item.tipo)}</span>
             <span class="px-2 py-0.5 rounded-md bg-blue-50 text-kinedrik-blue font-semibold text-[11px] border border-blue-100">${escapeHtml(item.normativa)}</span>
             <span class="flex items-center gap-1 text-gray-400 text-[11px]">
@@ -615,7 +751,7 @@ async function openHistoryItem(id) {
 }
 
 /* ===== Home stats ===== */
-async function loadHomeStats() {
+async function loadHistoryStats() {
   const list = await loadHistory(false) || [];
   animateNumber(document.getElementById('statCount'), list.length, 600);
 
@@ -852,12 +988,7 @@ async function saveAdminPrompt() {
 }
 
 /* ===== Auth (Lógica compartida UI Form + Firebase) ===== */
-const DEMO_ACCOUNTS = {
-  testing: { pass: '123', role: 'estudiante' },
-  admin: { pass: 'kinedrik2026', role: 'admin' }
-};
-
-function showApp(username, role) {
+function showApp(username, role, intro = false) {
   state.role = role || 'estudiante';
   document.getElementById('loginScreen').hidden = true;
   document.getElementById('appRoot').hidden = false;
@@ -868,24 +999,35 @@ function showApp(username, role) {
   document.getElementById('navAdmin').hidden = state.role !== 'admin';
   
   checkApiStatus();
-  loadHomeStats();
+  loadCredits();
   loadHistory(false);
   revealIn(document.getElementById('home'));
+  if (intro) playKaiReveal(`Bienvenido, ${username}`);
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const errorBox = document.getElementById('loginError');
-  const account = DEMO_ACCOUNTS[user];
+  errorBox.style.display = 'none';
 
-  if (account && account.pass === pass) {
-    errorBox.style.display = 'none';
-    sessionStorage.setItem('kaiUser', user);
-    sessionStorage.setItem('kaiRole', account.role);
-    showApp(user, account.role);
-  } else {
+  try {
+    // Las credenciales demo se validan en el servidor, que devuelve un token de sesión firmado
+    const res = await fetch('/api/auth/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, pass })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Usuario o contraseña incorrectos.');
+
+    sessionStorage.setItem('kaiUser', data.user);
+    sessionStorage.setItem('kaiRole', data.role);
+    sessionStorage.setItem('kaiDemoToken', data.token);
+    showApp(data.user, data.role, true);
+  } catch (err) {
+    errorBox.textContent = err.message || 'No se pudo iniciar sesión.';
     errorBox.style.display = 'block';
   }
   return false;
@@ -895,6 +1037,7 @@ function handleLogout() {
   // Limpiar credenciales locales de Demo
   sessionStorage.removeItem('kaiUser');
   sessionStorage.removeItem('kaiRole');
+  sessionStorage.removeItem('kaiDemoToken');
   // Limpiar credenciales de Google
   sessionStorage.removeItem('kinedrik_token');
   sessionStorage.removeItem('kinedrik_uid');
@@ -910,14 +1053,14 @@ function handleLogout() {
 const savedUser = sessionStorage.getItem('kaiUser');
 const kinedrikUserStr = sessionStorage.getItem('kinedrik_user');
 
-if (savedUser && DEMO_ACCOUNTS[savedUser]) {
+if (savedUser && sessionStorage.getItem('kaiDemoToken')) {
   // Priorizar ingreso por sesión Form Demo
-  showApp(savedUser, sessionStorage.getItem('kaiRole') || DEMO_ACCOUNTS[savedUser].role);
+  showApp(savedUser, sessionStorage.getItem('kaiRole') || 'estudiante', true);
 } else if (kinedrikUserStr) {
   // Priorizar ingreso por sesión Google
   try {
     const kUser = JSON.parse(kinedrikUserStr);
-    showApp(kUser.name || 'Usuario', 'user');
+    showApp(kUser.name || 'Usuario', 'user', true);
   } catch (e) {
     console.error("Error cargando sesión de Google", e);
   }
@@ -926,8 +1069,13 @@ if (savedUser && DEMO_ACCOUNTS[savedUser]) {
 /* ===== Export to window for inline HTML handlers ===== */
 Object.assign(window, {
   goTo,
+  showApp,
   handleLogin,
   handleLogout,
+  selectArea,
+  filterAreas,
+  confirmUsecaseStep,
+  showUsecaseStep,
   selectUsecase,
   onFilePicked,
   selectLevel,
@@ -940,7 +1088,137 @@ Object.assign(window, {
   openHistoryItem,
   loadHistory,
   loadProgress,
-  loadHomeStats,
+  loadHistoryStats,
   loadAdminPrompt,
   showApp
 });
+
+/* ===== Licitaciones (Opportunity Scout) ===== */
+const AREAS_LICITACION = [
+  { codigo: 'AINFRAT', nombre: 'Infraestructuras Civiles y de Transporte' },
+  { codigo: 'AESTGEO', nombre: 'Estructuras, Materiales y Geotecnia' },
+  { codigo: 'AOHHEAM', nombre: 'Obras Hidráulicas' },
+  { codigo: 'AMETBIM', nombre: 'BIM' },
+  { codigo: 'AGESDIR', nombre: 'Gestión y Financiación de Empresas y Proyectos' },
+  { codigo: 'AENERPM', nombre: 'Energía, Minas y Petróleo' },
+  { codigo: 'ATRDIGI', nombre: 'Transformación Digital' },
+  { codigo: 'AINDAPP', nombre: 'Ingeniería, Aplicaciones e Instalaciones Industriales' }
+];
+
+let licAreaSeleccionada = 'AMETBIM';
+const ICON_BUSCAR = '<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>';
+const ICON_FLECHA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg>';
+
+function initLicitaciones() {
+  const chips = document.getElementById('licChips');
+  if (chips.children.length) return;
+
+  chips.innerHTML = AREAS_LICITACION.map(a => `<button type="button" class="lic-chip" data-codigo="${a.codigo}">${escapeHtml(a.nombre)}</button>`).join('');
+  chips.querySelector(`[data-codigo="${licAreaSeleccionada}"]`).classList.add('active');
+  chips.addEventListener('click', e => {
+    const chip = e.target.closest('.lic-chip');
+    if (!chip) return;
+    licAreaSeleccionada = chip.dataset.codigo;
+    chips.querySelectorAll('.lic-chip').forEach(c => c.classList.toggle('active', c === chip));
+  });
+
+  // Letras del título con entrada escalonada (solo la primera vez)
+  const titulo = document.getElementById('licTitle');
+  titulo.setAttribute('aria-label', titulo.textContent);
+  titulo.innerHTML = [...titulo.textContent].map((ch, i) => `<span aria-hidden="true" style="--i:${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+
+  document.getElementById('licQuery').addEventListener('keydown', e => {
+    if (e.key === 'Enter') buscarLicitacionesUI();
+  });
+}
+
+function skeletonsLicitacion(n) {
+  return Array.from({ length: n }, () => '<div class="lic-skel"></div>').join('');
+}
+
+// Contador animado con ease-out cúbico
+function contarLicitaciones(el, total) {
+  let inicio = null;
+  const paso = t => {
+    if (inicio === null) inicio = t;
+    const p = Math.min((t - inicio) / 700, 1);
+    el.textContent = `${Math.round(total * (1 - Math.pow(1 - p, 3)))} resultados`;
+    if (p < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
+
+function tarjetaLicitacion(r, i) {
+  const fecha = r.fechaPublicacion ? String(r.fechaPublicacion).slice(0, 10) : '';
+  const precio = r.precioBase && !isNaN(Number(r.precioBase)) ? `${Number(r.precioBase).toLocaleString('es-CO')} COP` : '';
+  return `
+    <article class="lic-card" style="--i:${i}">
+      <h3 class="lic-card-title">${escapeHtml(r.titulo)}</h3>
+      <div class="lic-meta">
+        ${r.entidad ? `<span>${escapeHtml(r.entidad)}</span>` : ''}
+        ${fecha ? `<span>Publicado <b>${escapeHtml(fecha)}</b></span>` : ''}
+        ${precio ? `<span>Precio base <b>${escapeHtml(precio)}</b></span>` : ''}
+      </div>
+      <div class="lic-foot">
+        ${r.estado ? `<span class="lic-pill">${escapeHtml(r.estado)}</span>` : '<span></span>'}
+        ${r.url ? `<a class="lic-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Ver anuncio ${ICON_FLECHA}</a>` : ''}
+      </div>
+    </article>`;
+}
+
+function renderFuenteLicitacion(boxId, countId, fuente) {
+  const box = document.getElementById(boxId);
+  const count = document.getElementById(countId);
+  if (!fuente.ok) {
+    count.textContent = '';
+    box.innerHTML = `<div class="lic-error">No se pudo consultar: ${escapeHtml(fuente.error)}</div>`;
+    return;
+  }
+  if (!fuente.resultados.length) {
+    count.textContent = '0 resultados';
+    box.innerHTML = `<div class="lic-empty"><div class="ico">${ICON_BUSCAR}</div>Sin resultados para esta búsqueda.</div>`;
+    return;
+  }
+  contarLicitaciones(count, fuente.resultados.length);
+  box.innerHTML = fuente.resultados.map((r, i) => tarjetaLicitacion(r, i)).join('');
+}
+
+async function buscarLicitacionesUI() {
+  const area = AREAS_LICITACION.find(a => a.codigo === licAreaSeleccionada);
+  const q = document.getElementById('licQuery').value.trim();
+  const status = document.getElementById('licStatus');
+  const boton = document.getElementById('licBuscar');
+
+  boton.disabled = true;
+  status.textContent = 'Consultando SECOP II y TED…';
+  document.getElementById('licCountSecop').textContent = '';
+  document.getElementById('licCountTed').textContent = '';
+  document.getElementById('licSecop').innerHTML = skeletonsLicitacion(3);
+  document.getElementById('licTed').innerHTML = skeletonsLicitacion(3);
+
+  try {
+    const params = new URLSearchParams({ area: area.codigo });
+    if (q) params.set('q', q);
+    const res = await fetch(`/api/licitaciones?${params}`, { headers: getAuthHeaders() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    renderFuenteLicitacion('licSecop', 'licCountSecop', data.fuentes.secop2);
+    renderFuenteLicitacion('licTed', 'licCountTed', data.fuentes.ted);
+    status.textContent = `${area.nombre}${q ? ` · “${q}”` : ''}`;
+  } catch (err) {
+    status.textContent = '';
+    document.getElementById('licSecop').innerHTML = `<div class="lic-error">${escapeHtml(err.message)}</div>`;
+    document.getElementById('licTed').innerHTML = '';
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+Object.assign(window, { buscarLicitacionesUI, startCronograma });
+
+/* ===== Cronograma: entra al flujo de revisión con el tipo Cronograma ya elegido ===== */
+function startCronograma() {
+  state.tipo = 'Cronograma';
+  goTo('usecase');
+  document.querySelectorAll('.usecase').forEach(u => u.classList.toggle('selected', u.dataset.tipo === 'Cronograma'));
+}

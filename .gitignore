@@ -1,5 +1,6 @@
 node_modules/
 dist/
+tailwind.css
 .env
 data/db.json
 data/config.json
@@ -17,3 +18,4 @@ Proyecto.xlsx
 estudio.txt
 kickoff.txt
 kai-workspace-prototipo*.html
+data/kb-index.json

@@ -8,8 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23040025'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='17' fill='white' text-anchor='middle'%3EK·%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/input.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/tailwind.css">
 </head>
 <body class="bg-off-white text-navy font-sans antialiased h-screen overflow-hidden">
 
@@ -32,7 +32,7 @@
       <p class="text-gray-500 text-sm mt-2">Inicia sesión con tus credenciales corporativas.</p>
     </div>
 
-    <form id="loginForm" onsubmit="return handleLogin(event)" class="space-y-5">
+    <form id="loginForm" onsubmit="handleLogin(event); return false" class="space-y-5">
       <div>
         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Usuario</label>
         <input type="text" id="loginUser" autocomplete="username" placeholder="usuario" required class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-kinedrik-blue focus:ring-4 focus:ring-blue-50 transition-all font-medium">
@@ -92,11 +92,7 @@
         const userData = await response.json();
         sessionStorage.setItem('kinedrik_token', token);
         sessionStorage.setItem('kinedrik_uid', userData.uid);
-        document.getElementById('loginScreen').hidden = true;
-        document.getElementById('appRoot').hidden = false;
-        document.getElementById('userName').innerText = userData.name;
-        document.getElementById('userAvatar').innerText = userData.name.substring(0, 2).toUpperCase();
-        document.getElementById('userRole').innerText = 'Usuario verificado';
+        window.showApp(userData.name, 'user', true);
       } else {
         throw new Error('Fallo en la verificación del backend');
       }
@@ -131,10 +127,8 @@
     <button class="nav-item" id="navHistory" onclick="goTo('history')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
       Historial <span class="nav-badge" id="historyBadge">0</span></button>
-    <button class="nav-item" id="navProgress" onclick="goTo('progress')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
-      Mi progreso</button>
-    <div class="nav-section">Mi máster</div>
+    
+            <div class="nav-section">Mi máster</div>
     <button class="nav-item" disabled title="Próximamente">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       BIM Management</button>
@@ -171,13 +165,14 @@
 
       <!-- ========== HOME ========== -->
       <section class="screen active max-w-6xl mx-auto" id="home">
-        <!-- Hero -->
+        <!-- Hero: propósito de la plataforma -->
         <div class="relative bg-gradient-to-br from-navy via-navy to-kinedrik-blue rounded-3xl p-10 lg:p-12 mb-8 shadow-xl overflow-hidden text-white">
           <div class="absolute -right-20 -top-20 w-96 h-96 bg-digital-blue opacity-20 blur-3xl rounded-full"></div>
           <div class="relative z-10 max-w-2xl">
-            <div class="text-digital-blue font-bold text-xs uppercase tracking-widest mb-3">Panel Principal</div>
+            <div class="text-digital-blue font-bold text-xs uppercase tracking-widest mb-3">Panel principal</div>
             <h1 class="font-head text-4xl lg:text-5xl font-extrabold tracking-tight mb-4">Buenos días</h1>
-            <p class="text-gray-300 text-lg mb-8 leading-relaxed">Tu equipo de IA especializada, entrenado en normativa BIM/AEC. Tú decides, la IA te asiste en cada revisión.</p>
+            <p class="text-gray-300 text-lg mb-4 leading-relaxed">Tu equipo de IA especializada, entrenado en normativa BIM/AEC. Tú decides, la IA te asiste en cada revisión. Subes un documento de tu proyecto (un BEP, un cronograma, un pliego) y la plataforma lo compara con la base normativa de tu área: ISO 19650 y otras normas cargadas en el sistema.</p>
+            <p class="text-gray-400 text-sm mb-8 leading-relaxed">Cada hallazgo cita la cláusula de la base. La decisión final siempre es del profesional.</p>
             <button class="bg-white text-navy px-6 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2 group" onclick="goTo('usecase')">
               Iniciar una revisión
               <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -185,47 +180,66 @@
           </div>
         </div>
 
-        <!-- Stats Row -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Revisiones completadas</div>
-            <div class="font-head text-3xl font-extrabold text-navy"><span id="statCount">0</span><span class="text-xs font-bold text-grass-green ml-1.5" id="statCountDelta" hidden></span></div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Riesgos altos detectados</div>
-            <div class="font-head text-3xl font-extrabold text-red-600" id="statHigh">0</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Riesgos totales</div>
-            <div class="font-head text-3xl font-extrabold text-navy" id="statTotal">0</div>
-          </div>
-          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Score medio</div>
-            <div class="font-head text-3xl font-extrabold text-digital-blue" id="statScore">—</div>
+        <!-- Cómo funciona -->
+        <div class="mb-10">
+          <h2 class="font-head text-lg font-bold text-navy mb-4">Cómo funciona una revisión</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <div class="text-xs font-bold text-kinedrik-blue mb-2">PASO 1</div>
+              <div class="font-bold text-navy mb-1">Elige el área</div>
+              <p class="text-sm text-gray-500 leading-relaxed">La disciplina determina la base normativa que se usa para revisar.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <div class="text-xs font-bold text-kinedrik-blue mb-2">PASO 2</div>
+              <div class="font-bold text-navy mb-1">Elige el tipo de documento</div>
+              <p class="text-sm text-gray-500 leading-relaxed">BEP, EIR, cronograma, memoria técnica u otro. Cada tipo tiene su foco de revisión.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <div class="text-xs font-bold text-kinedrik-blue mb-2">PASO 3</div>
+              <div class="font-bold text-navy mb-1">Sube el archivo</div>
+              <p class="text-sm text-gray-500 leading-relaxed">Recibes un informe con nota, riesgos priorizados, checklist y recomendaciones con su cita.</p>
+            </div>
           </div>
         </div>
 
-        <!-- Skills Grid -->
+        <!-- Herramientas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <!-- Card 1: Technical Reviewer-->
+          <!-- Card 1: Technical Reviewer -->
           <div class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:border-kinedrik-blue hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer relative" onclick="goTo('usecase')">
             <div class="absolute top-8 right-8 text-gray-300 group-hover:text-kinedrik-blue transition-colors text-2xl">&rarr;</div>
             <div class="w-14 h-14 rounded-2xl bg-blue-50 text-kinedrik-blue flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7z"/></svg>
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z"/></svg>
             </div>
-            <h3 class="font-head text-xl font-bold text-navy mb-3">AI Technical Reviewer</h3>
-            <p class="text-gray-500 text-sm leading-relaxed mb-6 pr-8">Revisa documentación BIM con IA real: identifica errores, incoherencias, riesgos contractuales y genera checklist normativo.</p>
-            <div class="flex gap-2">
-              <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-kinedrik-blue border border-blue-100">BIM Management</span>
-              <span class="text-xs font-bold px-3 py-1 rounded-full bg-green-50 text-grass-green border border-green-100 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-grass-green"></span> Disponible</span>
+            <h3 class="font-head text-xl font-bold text-navy mb-2">AI Technical Reviewer</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-5 pr-8">Revisa un PDF o DOCX frente a la normativa de tu área y devuelve riesgos, checklist y recomendaciones con cita a la base.</p>
+            <span class="text-xs font-bold px-3 py-1 rounded-full bg-green-50 text-grass-green border border-green-100">Disponible</span>
+          </div>
+
+          <!-- Licitaciones (próximamente en el inicio; sigue disponible en el menú) -->
+          <div class="bg-white rounded-3xl p-8 border border-gray-100 opacity-60 cursor-not-allowed">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-digital-blue flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
             </div>
+            <h3 class="font-head text-xl font-bold text-navy mb-3">Licitaciones</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Busca anuncios públicos reales en SECOP II y TED, filtrados por área o palabra clave.</p>
+            <span class="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Próximamente</span>
+          </div>
+
+          <!-- Cronograma (próximamente en el inicio; sigue disponible en el menú) -->
+          <div class="bg-white rounded-3xl p-8 border border-gray-100 opacity-60 cursor-not-allowed">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-sun-yellow flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 14h3m4 0h3M7 17h7"/></svg>
+            </div>
+            <h3 class="font-head text-xl font-bold text-navy mb-3">Cronograma</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Revisión de cronogramas: hitos, secuencia y entregas de información.</p>
+            <span class="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Próximamente</span>
           </div>
 
           <!-- Card 2: Design Explorer -->
           <div class="bg-white rounded-3xl p-8 border border-gray-100 opacity-60 cursor-not-allowed">
             <div class="w-14 h-14 rounded-2xl bg-purple-50 text-tech-purple flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.3-4.3"/><path stroke-linecap="round" stroke-linejoin="round" d="M11 8v6M8 11h6"/></svg>
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.3-4.3"/></svg>
             </div>
             <h3 class="font-head text-xl font-bold text-navy mb-3">AI Design Explorer</h3>
             <p class="text-gray-500 text-sm leading-relaxed mb-6">Explora alternativas de diseño y compara opciones espaciales con criterios técnicos objetivos.</p>
@@ -248,7 +262,7 @@
           <!-- Card 4: Technical Research -->
           <div class="bg-white rounded-3xl p-8 border border-gray-100 opacity-60 cursor-not-allowed">
             <div class="w-14 h-14 rounded-2xl bg-amber-50 text-sun-yellow flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h7M9 11h5"/></svg>
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg>
             </div>
             <h3 class="font-head text-xl font-bold text-navy mb-3">AI Technical Research</h3>
             <p class="text-gray-500 text-sm leading-relaxed mb-6">Investiga normativa, papers y casos de estudio con fuentes citadas y verificables.</p>
@@ -257,68 +271,239 @@
               <span class="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Próximamente</span>
             </div>
           </div>
-
         </div>
       </section>
 
-      <!-- ========== USE CASE ========== -->
-      <section class="screen max-w-4xl mx-auto" id="usecase">
+      <section class="screen max-w-5xl mx-auto" id="usecase">
         <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
           <button class="flex items-center text-gray-500 hover:text-kinedrik-blue transition-colors font-semibold text-sm group" onclick="goTo('home')">
             <svg class="w-5 h-5 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             Volver al Panel
           </button>
-          <button class="bg-kinedrik-blue text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-navy hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center" onclick="goTo('upload')">
-            Siguiente paso
-            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-          </button>
+          <div class="flex items-center gap-3">
+            <span id="areaSelectionStatus" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              Selecciona un Área (Obligatorio)
+            </span>
+            <button id="usecaseBackBtn" class="hidden text-gray-500 hover:text-kinedrik-blue transition-colors font-semibold text-sm items-center" onclick="showUsecaseStep(1)">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              Cambiar área
+            </button>
+            <button id="usecaseNextBtn" class="bg-kinedrik-blue text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-navy hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none" onclick="confirmUsecaseStep()" disabled>
+              Siguiente paso
+              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="mb-8">
+          <div class="text-digital-blue font-bold text-xs uppercase tracking-widest mb-1.5">Configuración Inicial</div>
           <h2 class="text-3xl font-extrabold text-navy tracking-tight font-head">AI Technical Reviewer</h2>
-          <p class="text-gray-500 mt-2 text-base">¿Qué tipo de documento necesitas revisar hoy?</p>
+          <p class="text-gray-500 mt-2 text-base">Selecciona primero el <b>Área Técnica o Sector</b> de tu proyecto para adaptar los criterios de la IA, y luego el tipo de documento.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="usecaseGrid">
-          <!-- Opciones con clases nativas protegidas para JS -->
-          <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="EIR" onclick="selectUsecase(this)">
-            <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+        <!-- PASO 1: ÁREA TÉCNICA (CAMPO OBLIGATORIO) -->
+        <div class="mb-10 bg-white rounded-3xl p-6 lg:p-8 border border-gray-200/90 shadow-sm relative overflow-hidden" id="usecaseStep1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
             <div>
-              <div class="font-bold text-navy">EIR</div>
-              <div class="text-sm text-gray-500 mt-1">Exchange Information Requirements — requisitos de información del cliente.</div>
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-navy text-white text-xs font-bold flex items-center justify-center">1</span>
+                <h3 class="font-head font-bold text-navy text-lg">Paso 1: Área Técnica / Sector <span class="text-rose-600 font-extrabold text-xs uppercase ml-1 px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200">* Campo obligatorio</span></h3>
+              </div>
+              <p class="text-xs text-gray-500 mt-1 pl-8">Elige la disciplina principal para aplicar la normativa y checklist correspondientes.</p>
+            </div>
+            <!-- Buscador rápido -->
+            <div class="relative w-full sm:w-64 shrink-0">
+              <input type="text" id="areaSearchInput" oninput="filterAreas(this.value)" placeholder="Filtrar por nombre..." class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-kinedrik-blue focus:ring-2 focus:ring-blue-50 transition-all font-medium">
+              <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></svg>
             </div>
           </div>
 
-          <div class="usecase selected bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all relative overflow-hidden" data-tipo="BEP" onclick="selectUsecase(this)">
-            <span class="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-tech-purple border border-purple-100">Más usado</span>
-            <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
-            <div class="pr-12">
-              <div class="font-bold text-navy">BEP</div>
-              <div class="text-sm text-gray-500 mt-1">BIM Execution Plan — plan de ejecución BIM pre o post contrato.</div>
+          <!-- GRID DE LAS 8 ÁREAS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="areaCardsGrid">
+            <!-- 1. Infraestructuras Civiles y de Transporte -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Infraestructuras Civiles y de Transporte" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-kinedrik-blue flex items-center justify-center shrink-0 border border-blue-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M4 15h16M7 15V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v10M10 9h4"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Infraestructuras Civiles y de Transporte</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Carreteras, puertos, puentes y vías ferroviarias.</p>
+              </div>
+            </div>
+
+            <!-- 2. Estructuras, Materiales y Geotecnia -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Estructuras, Materiales y Geotecnia" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-tech-purple flex items-center justify-center shrink-0 border border-purple-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Estructuras, Materiales y Geotecnia</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Cálculo de estructuras, cimentación y ensayo de materiales.</p>
+              </div>
+            </div>
+
+            <!-- 3. Obras Hidráulicas -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Obras Hidráulicas" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 border border-cyan-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m0-18C9.5 6 6 8.5 6 12a6 6 0 0 0 12 0c0-3.5-3.5-6-6-9z"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Obras Hidráulicas</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Presas, saneamiento, depuración y encauzamientos.</p>
+              </div>
+            </div>
+
+            <!-- 4. BIM -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="BIM" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">BIM</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">BIM Management, modelos de datos ISO 19650 e interoperabilidad.</p>
+              </div>
+            </div>
+
+            <!-- 5. Gestión y Financiación de Empresas y Proyectos -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Gestión y Financiación de Empresas y Proyectos" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 12v-2m0 0c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Gestión y Financiación de Empresas y Proyectos</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Control financiero, licitaciones, costes y contract management.</p>
+              </div>
+            </div>
+
+            <!-- 6. Energía, Minas y Petróleo -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Energía, Minas y Petróleo" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Energía, Minas y Petróleo</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Renovables, subestaciones, minería y plantas de generación.</p>
+              </div>
+            </div>
+
+            <!-- 7. Transformación Digital -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Transformación Digital" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-digital-blue flex items-center justify-center shrink-0 border border-blue-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Transformación Digital</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Gemelos Digitales, automatización de workflows e IA aplicada.</p>
+              </div>
+            </div>
+
+            <!-- 8. Ingeniería, Aplicaciones e Instalaciones Industriales -->
+            <div class="area-card group bg-white rounded-2xl p-4 border border-gray-200 cursor-pointer flex flex-col justify-between transition-all hover:border-kinedrik-blue hover:shadow-md relative overflow-hidden" data-area="Ingeniería, Aplicaciones e Instalaciones Industriales" onclick="selectArea(this)">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100/80 group-hover:scale-105 transition-transform">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div class="area-radio w-5 h-5 rounded-full border-2 border-gray-300 shrink-0 relative transition-all"></div>
+              </div>
+              <div>
+                <h4 class="font-head font-bold text-navy text-sm leading-tight mb-1 group-hover:text-kinedrik-blue transition-colors">Ingeniería, Aplicaciones e Instalaciones Industriales</h4>
+                <p class="text-[11px] text-gray-500 leading-snug">Plantas industriales, instalaciones MEP y climatización avanzada.</p>
+              </div>
             </div>
           </div>
 
-          <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="IFC / Modelo BIM" onclick="selectUsecase(this)">
-            <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
-            <div>
-              <div class="font-bold text-navy">IFC</div>
-              <div class="text-sm text-gray-500 mt-1">Validación de estructura de datos y parámetros a partir de documentación.</div>
-            </div>
+          <div id="noAreaMatches" class="text-center py-6 text-gray-400 text-xs hidden">
+            No se encontraron áreas técnicas que coincidan con la búsqueda.
           </div>
+        </div>
 
-          <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="Memoria técnica" onclick="selectUsecase(this)">
-            <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
-            <div>
-              <div class="font-bold text-navy">Memoria técnica</div>
-              <div class="text-sm text-gray-500 mt-1">Validación de coherencia estructural y completitud del proyecto.</div>
-            </div>
+        <!-- PASO 2: TIPO DE DOCUMENTO -->
+        <div class="hidden" id="step2DocSection">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-6 h-6 rounded-full bg-navy text-white text-xs font-bold flex items-center justify-center" id="step2BadgeNum">2</span>
+            <h3 class="font-head font-bold text-navy text-lg">Paso 2: Tipo de Documento a Revisar</h3>
           </div>
+          <p class="text-xs text-gray-500 mt-1 mb-6 pl-8">Área seleccionada: <span class="font-bold text-navy" id="step2AreaLabel">—</span></p>
 
-          <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="Verificación ISO" onclick="selectUsecase(this)">
-            <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
-            <div>
-              <div class="font-bold text-navy">Verificación ISO</div>
-              <div class="text-sm text-gray-500 mt-1">Auditoría de conformidad estricta frente a ISO 19650 y UNE-EN.</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="usecaseGrid">
+            <!-- Opciones con clases nativas protegidas para JS -->
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="EIR" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">EIR</div>
+                <div class="text-sm text-gray-500 mt-1">Exchange Information Requirements — requisitos de información del cliente.</div>
+              </div>
+            </div>
+
+            <div class="usecase selected bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all relative overflow-hidden" data-tipo="BEP" onclick="selectUsecase(this)">
+              <span class="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-tech-purple border border-purple-100">Más usado</span>
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div class="pr-12">
+                <div class="font-bold text-navy">BEP</div>
+                <div class="text-sm text-gray-500 mt-1">BIM Execution Plan — plan de ejecución BIM pre o post contrato.</div>
+              </div>
+            </div>
+
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="IFC / Modelo BIM" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">IFC</div>
+                <div class="text-sm text-gray-500 mt-1">Validación de estructura de datos y parámetros a partir de documentación.</div>
+              </div>
+            </div>
+
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="Memoria técnica" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">Memoria técnica</div>
+                <div class="text-sm text-gray-500 mt-1">Validación de coherencia estructural y completitud del proyecto.</div>
+              </div>
+            </div>
+
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="Verificación ISO" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">Verificación ISO</div>
+                <div class="text-sm text-gray-500 mt-1">Auditoría de conformidad estricta frente a ISO 19650 y UNE-EN.</div>
+              </div>
+            </div>
+
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="Cronograma" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">Cronograma</div>
+                <div class="text-sm text-gray-500 mt-1">Revisión de hitos, secuencia y entregas BIM del cronograma del proyecto.</div>
+              </div>
+            </div>
+
+            <div class="usecase bg-white rounded-2xl p-5 border border-gray-200 cursor-pointer flex items-start gap-4 transition-all hover:border-kinedrik-blue" data-tipo="BEP por área" onclick="selectUsecase(this)">
+              <div class="radio w-5 h-5 rounded-full border-2 border-gray-300 mt-0.5 shrink-0 relative transition-colors"></div>
+              <div>
+                <div class="font-bold text-navy">BEP por área</div>
+                <div class="text-sm text-gray-500 mt-1">Revisión de la sección del BEP de cada área o disciplina y su coherencia con el general.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -387,7 +572,18 @@
 
           <!-- Config Panel -->
           <div class="bg-white rounded-3xl border border-gray-200 p-6 lg:p-8 shadow-sm h-fit">
-            <h3 class="font-bold text-navy text-lg mb-6">Contexto de revisión</h3>
+            <h3 class="font-bold text-navy text-lg mb-4">Contexto de revisión</h3>
+
+            <div class="mb-5 p-3.5 rounded-2xl bg-blue-50/90 border border-blue-100 flex items-center justify-between shadow-sm">
+              <div class="min-w-0 pr-2">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-kinedrik-blue">Área Técnica Seleccionada</div>
+                <div class="font-bold text-navy text-xs truncate mt-0.5" id="selectedAreaBadge">Infraestructuras Civiles y de Transporte</div>
+              </div>
+              <button onclick="goTo('usecase')" class="text-xs font-bold text-kinedrik-blue hover:underline shrink-0 flex items-center gap-1">
+                <span>Cambiar</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+              </button>
+            </div>
 
             <div class="mb-5">
               <label class="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Normativa <span class="info-dot" tabindex="0" data-tip="La IA evalúa el documento contra las cláusulas de esta normativa y las cita en cada riesgo.">i</span></label>
@@ -477,6 +673,26 @@
           </button>
         </div>
 
+        <!-- Cifras del historial -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Pruebas ejecutadas</div>
+            <div class="font-head text-3xl font-extrabold text-navy"><span id="statCount">0</span><span class="text-xs font-bold text-grass-green ml-1.5" id="statCountDelta" hidden></span></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Riesgos altos detectados</div>
+            <div class="font-head text-3xl font-extrabold text-red-600" id="statHigh">0</div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Riesgos totales</div>
+            <div class="font-head text-3xl font-extrabold text-navy" id="statTotal">0</div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Score medio</div>
+            <div class="font-head text-3xl font-extrabold text-digital-blue" id="statScore">—</div>
+          </div>
+        </div>
+
         <div class="space-y-4">
           <div class="p-8 text-center text-gray-500 text-sm bg-white rounded-3xl border border-gray-100 shadow-sm" id="historyEmpty">
             <div class="w-16 h-16 rounded-2xl bg-blue-50 text-kinedrik-blue flex items-center justify-center mx-auto mb-4">
@@ -493,105 +709,47 @@
         </div>
       </section>
 
-      <!-- ========== PROGRESS (analítica real) ========== -->
-      <section class="screen max-w-6xl mx-auto" id="progress">
-        <div class="mb-8">
-          <h2 class="text-3xl font-extrabold text-navy tracking-tight font-head">Mi progreso</h2>
-          <p class="text-gray-500 mt-1.5 text-sm font-medium">Analítica real de calidad documental — calculada en vivo desde tu historial de revisiones.</p>
+      <!-- ========== LICITACIONES (Opportunity Scout) ========== -->
+      <section class="screen max-w-6xl mx-auto" id="licitaciones">
+        <div class="lic-hero mb-8">
+          <div class="flex flex-wrap items-center gap-2.5 mb-6">
+            <span class="lic-live"><i></i>SECOP II en vivo</span>
+            <span class="lic-live"><i></i>TED en vivo</span>
+          </div>
+          <p class="lic-kicker mb-3">Opportunity Scout</p>
+          <h2 class="lic-title" id="licTitle">Licitaciones</h2>
+          <p class="text-white/70 mt-4 max-w-xl text-sm sm:text-base leading-relaxed">Anuncios públicos reales de contratación, filtrados por tu área. Cada resultado enlaza al anuncio original.</p>
         </div>
 
-        <div id="progressEmpty" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-10 text-center text-gray-500 text-sm" style="display:none">
-          <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 8-8"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 7h7v7"/></svg>
+        <div class="lic-glass mb-6">
+          <div class="lic-chips" id="licChips"></div>
+          <div class="lic-search">
+            <div class="lic-field">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+              <input id="licQuery" class="lic-input" type="text" maxlength="120" placeholder="Palabra clave opcional: estructura, carretera, BIM…">
+            </div>
+            <button id="licBuscar" class="lic-btn" onclick="buscarLicitacionesUI()">Buscar</button>
           </div>
-          <div class="font-bold text-navy text-base mb-1">Insuficientes datos para analítica</div>
-          <p class="text-gray-400 text-xs max-w-sm mx-auto">Completa al menos una revisión en AI Technical Reviewer para generar métricas e indicadores de progreso.</p>
+          <div id="licStatus" class="lic-status"></div>
         </div>
 
-        <div id="progressContent">
-          <!-- Stat Bento Cards Top -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-            <div class="bento-stat reveal" style="--d:0">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Revisiones totales</span>
-                <div class="w-9 h-9 rounded-xl bg-blue-50 text-kinedrik-blue flex items-center justify-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-              </div>
-              <div class="font-head text-4xl font-extrabold text-navy tracking-tight" id="progTotal">0</div>
-              <div class="text-[11px] text-gray-400 mt-2 font-medium">Documentos auditados con éxito</div>
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <div class="lic-col-head">
+              <span class="lic-badge secop">SECOP II · Colombia</span>
+              <span class="lic-count" id="licCountSecop"></span>
             </div>
-
-            <div class="bento-stat reveal" style="--d:1">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Score medio de madurez</span>
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-              </div>
-              <div class="font-head text-4xl font-extrabold text-digital-blue tracking-tight" id="progAvgScore">—</div>
-              <div class="text-[11px] text-gray-400 mt-2 font-medium">Promedio de calidad normativa / 100</div>
-            </div>
-
-            <div class="bento-stat reveal" style="--d:2">
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Riesgos detectados</span>
-                <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-              </div>
-              <div class="font-head text-4xl font-extrabold text-rose-600 tracking-tight" id="progTotalRisks">0</div>
-              <div class="text-[11px] text-gray-400 mt-2 font-medium">Incoherencias contractuales y normativas</div>
-            </div>
+            <div id="licSecop"></div>
           </div>
-
-          <!-- Bento Grid Analytics -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="space-y-6">
-              <!-- Score Trend -->
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 reveal" style="--d:3">
-                <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-                  <span class="font-head font-bold text-navy text-base flex items-center gap-2">
-                    Evolución del score de madurez
-                    <span class="info-dot" tabindex="0" data-tip="Puntuación otorgada en cada revisión realizada. Observa la progresión de tus entregables.">i</span>
-                  </span>
-                </div>
-                <div class="space-y-3" id="progScoreTrend"></div>
-              </div>
-
-              <!-- Top Risks -->
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 reveal" style="--d:4">
-                <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-                  <span class="font-head font-bold text-navy text-base flex items-center gap-2">
-                    Riesgos más frecuentes
-                    <span class="info-dot" tabindex="0" data-tip="Los errores o vacíos normativos que más se repiten en tu documentación.">i</span>
-                  </span>
-                </div>
-                <div class="space-y-2.5" id="progTopRisks"></div>
-              </div>
+          <div>
+            <div class="lic-col-head">
+              <span class="lic-badge ted">TED · Unión Europea</span>
+              <span class="lic-count" id="licCountTed"></span>
             </div>
-
-            <div class="space-y-6">
-              <!-- Risk Severity -->
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 reveal" style="--d:5">
-                <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-                  <span class="font-head font-bold text-navy text-base">Distribución por severidad</span>
-                </div>
-                <div class="space-y-3" id="progRiskSeverity"></div>
-              </div>
-
-              <!-- Checklist Compliance -->
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 reveal" style="--d:6">
-                <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-                  <span class="font-head font-bold text-navy text-base">Cumplimiento de checklist ISO</span>
-                </div>
-                <div class="space-y-3" id="progChecklist"></div>
-              </div>
-            </div>
+            <div id="licTed"></div>
           </div>
         </div>
       </section>
-
 
       <!-- ========== ADMIN: SYSTEM PROMPT ========== -->
       <section class="screen max-w-3xl mx-auto" id="admin">
@@ -764,7 +922,7 @@
     <button class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-navy hover:bg-gray-50 transition-colors" onclick="closeDetail()">✕</button>
     <div class="flex gap-2 mb-3">
       <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide" id="dSev">Riesgo</span>
-      <span class="px-2.5 py-1 rounded-md bg-gray-100 text-gray-500 text-[10px] font-bold font-mono tracking-wide" id="dLoc">—</span>
+      <span class="px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium font-sans" id="dLoc">—</span>
     </div>
     <h3 class="font-head text-xl font-bold text-navy leading-tight pr-10" id="dTitle">—</h3>
   </div>
@@ -791,7 +949,7 @@
 
     <div>
       <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Resolución sugerida</div>
-      <div class="bg-navy p-5 rounded-xl text-gray-200 font-mono text-xs leading-relaxed whitespace-pre-wrap shadow-inner" id="dFix">—</div>
+      <div class="bg-navy p-5 rounded-xl text-gray-100 font-sans text-sm leading-relaxed whitespace-pre-wrap shadow-inner" id="dFix">—</div>
     </div>
 
     <div class="pt-4 border-t border-gray-100">
@@ -815,7 +973,27 @@
   </div>
 </aside>
 
-<script type="module" src="./app.js"></script>
+<!-- ========== REVEAL: animación al recibir la respuesta de la IA ========== -->
+<div class="kai-reveal" id="kaiReveal" aria-live="polite" hidden>
+  <div class="kai-reveal-grid"></div>
+  <div class="kai-reveal-glow"></div>
+  <div class="kai-reveal-stage">
+    <div class="kai-reveal-mark">
+      <span class="kai-ring r1"></span><span class="kai-ring r2"></span><span class="kai-ring r3"></span>
+      <div class="kai-reveal-core">K·</div>
+    </div>
+    <div class="kai-reveal-word" aria-label="K·AI Workspace">
+      <span>K</span><span class="dot">·</span><span class="ai">A</span><span class="ai">I</span><span class="sp"></span><span>W</span><span>o</span><span>r</span><span>k</span><span>s</span><span>p</span><span>a</span><span>c</span><span>e</span>
+    </div>
+    <div class="kai-reveal-line"></div>
+    <div class="kai-reveal-sub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      <span id="kaiRevealSub">Informe listo</span>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./app.js?v=7"></script>
 </body>
 </html>
 

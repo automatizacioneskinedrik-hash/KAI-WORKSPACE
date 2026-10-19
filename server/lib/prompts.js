@@ -30,8 +30,31 @@ Reglas:
 - Si el documento no contiene información suficiente para evaluar algo, dilo explícitamente en el resumen en vez de inventarlo.
 - No incluyas comentarios ni texto fuera del objeto JSON.`;
 
-function buildAnalysisPrompt({ tipo, normativa, especialidad, nivel, fileName, text, truncated, customInstructions }) {
-  let system = `Eres un segundo revisor técnico experto en gestión BIM (Building Information Modelling) para proyectos AEC (arquitectura, ingeniería y construcción), especializado en ${especialidad}. Tu trabajo es revisar documentación técnica (tipo: ${tipo}) frente a la normativa ${normativa}, detectando errores, incoherencias internas, riesgos contractuales y omisiones. No sustituyes el criterio profesional del revisor humano: tu salida es un análisis de apoyo que el experto validará. Nivel de revisión solicitado: ${nivel}.`;
+const KB_RULES = `MARCO NORMATIVO DE REFERENCIA: a continuación van extractos recuperados de la base de conocimiento del proyecto (ISO 19650 e ISO 29481). Úsalos para fundamentar cada riesgo en "normative_reference", citando la parte y la cláusula (por ejemplo "ISO 19650-2, 5.6.4"). Si un punto no aparece en estos extractos, dilo en la explicación en lugar de inventar una cláusula.`;
+
+const TIPO_FOCUS = {
+  'Cronograma': 'Revisa el cronograma: hitos y entregables con fecha, secuencia y dependencias entre tareas, solapes o duraciones imposibles, y si incluye los hitos de intercambio de información BIM que exige la normativa (ISO 19650-2).',
+  'BEP por área': 'Revisa la parte del BEP que corresponde a cada área o disciplina: responsables, entregables por área, formatos, nomenclatura y coherencia con el BEP general del proyecto.'
+};
+
+function buildAnalysisPrompt({ area, tipo, normativa, especialidad, nivel, fileName, text, truncated, customInstructions, context, pertinencia }) {
+  const areaLabel = area || especialidad || 'Ingeniería y Construcción';
+  let system = `Eres un segundo revisor técnico experto en la disciplina de "${areaLabel}" para proyectos AEC (arquitectura, ingeniería y construcción). Tu trabajo es revisar documentación técnica (tipo: ${tipo}) frente a la normativa ${normativa}, detectando errores, incoherencias internas, riesgos contractuales y omisiones. No sustituyes el criterio profesional del revisor humano: tu salida es un análisis de apoyo que el experto validará. Nivel de revisión solicitado: ${nivel}.`;
+
+  if (TIPO_FOCUS[tipo]) {
+    system += `\n\nFoco específico para este tipo de documento: ${TIPO_FOCUS[tipo]}`;
+  }
+
+  // La pertinencia la decide el control automático (similitud con la base de datos), no el modelo.
+  if (pertinencia && pertinencia.disponible && !pertinencia.pertinente) {
+    system += `\n\nCONTROL AUTOMÁTICO DE PERTINENCIA: el documento NO corresponde a la base normativa del área "${areaLabel}" (similitud ${pertinencia.similitud}, umbral ${pertinencia.umbral}). Obligatorio: "score" entre 0 y 15; "risks" vacío; "correct_sections" vacío; "checklist" con status "fail" en los ítems principales; y en el resumen di que el documento no trata de ${tipo} en el área ${areaLabel}, por lo que no es posible evaluar su cumplimiento. No atribuyas ningún requisito de la normativa a este documento.`;
+  } else if (pertinencia && pertinencia.disponible) {
+    system += `\n\nCONTROL AUTOMÁTICO DE PERTINENCIA: el documento corresponde a la base normativa del área (similitud ${pertinencia.similitud}, umbral ${pertinencia.umbral}). Fundamenta cada hallazgo solo en los extractos normativos proporcionados abajo.`;
+  }
+
+  if (context && context.trim()) {
+    system += `\n\n${KB_RULES}\n\n${context}`;
+  }
 
   if (customInstructions && customInstructions.trim()) {
     system += `\n\nInstrucciones adicionales del equipo experto AEC (prioritarias, síguelas al pie de la letra junto con lo anterior):\n${customInstructions.trim()}`;
@@ -48,8 +71,12 @@ ${RESULT_SCHEMA_HINT}`;
   return { system, user };
 }
 
-function buildChatPrompt({ risk, question, tipo, normativa, docExcerpt, customInstructions }) {
+function buildChatPrompt({ risk, question, tipo, normativa, docExcerpt, customInstructions, context }) {
   let system = `Eres el mismo segundo revisor técnico BIM que generó el informe de revisión (normativa ${normativa}, tipo de documento ${tipo}). Ahora respondes preguntas puntuales del revisor humano sobre UN riesgo concreto ya detectado. Responde en español, en 3-8 frases, de forma concreta y aplicada. Deja claro que la decisión final es del profesional humano. No repitas literalmente el JSON del informe.`;
+
+  if (context && context.trim()) {
+    system += `\n\n${KB_RULES}\n\n${context}`;
+  }
 
   if (customInstructions && customInstructions.trim()) {
     system += `\n\nInstrucciones adicionales del equipo experto AEC (prioritarias):\n${customInstructions.trim()}`;

@@ -1,0 +1,56 @@
+{
+  "area_codigo": "AMETBIM",
+  "area_nombre": "BIM",
+  "fuente": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_BIM.docx (Google Drive KINEDRIK, autor: Manus AI)",
+  "nota_metodo": "Entregables transcritos literalmente de la sección 'Entregables:' de cada lote del PPT real. Ningún entregable ha sido añadido o inferido.",
+  "tipologias_proyecto": [
+    "Diseño Generativo y Optimización con IA",
+    "Automatización de la Detección de Conflictos y Verificación Normativa con IA",
+    "Gemelos Digitales (Digital Twins) con IA para Operación y Mantenimiento",
+    "Planificación y Simulación de Construcción con IA",
+    "Análisis de Datos BIM con Machine Learning para Toma de Decisiones"
+  ],
+  "lotes": [
+    {
+      "lote": "A", "nombre": "Diagnóstico del Sistema",
+      "entregables": ["Informe de diagnóstico BIM/IA", "Análisis de madurez BIM", "Inventario de software y hardware", "Definición de los usos BIM y casos de uso de IA", "Bases de datos de información recopilada"],
+      "casuisticas_normativa_ref": ["estándares BIM aplicables entorno común de datos CDE", "usos BIM y casos de uso"]
+    },
+    {
+      "lote": "B", "nombre": "Análisis Normativo",
+      "entregables": ["Informe de análisis normativo", "Matriz de requisitos legales y técnicos aplicables", "Identificación de permisos y licencias necesarios", "Plan de ejecución BIM (BEP) preliminar"],
+      "casuisticas_normativa_ref": ["requisitos y condiciones generales de gestión de la información", "plan de ejecución BIM BEP", "clasificación y codificación de la información"]
+    },
+    {
+      "lote": "C", "nombre": "Formulación de Alternativas",
+      "entregables": ["Informe de formulación de alternativas", "Esquemas conceptuales de la estrategia BIM/IA", "Tabla comparativa de alternativas"],
+      "casuisticas_normativa_ref": ["nivel de detalle LOD nivel de información LOI modelos"]
+    },
+    {
+      "lote": "D", "nombre": "Selección de Solución",
+      "entregables": ["Informe de selección de solución", "Matriz de decisión con ponderación de criterios", "Justificación técnica y económica de la alternativa elegida"],
+      "casuisticas_normativa_ref": ["criterios de aceptación validación de la información"]
+    },
+    {
+      "lote": "E", "nombre": "Diseño y Dimensionamiento de la Alternativa Seleccionada",
+      "entregables": ["Modelos BIM nativos y en formato IFC", "Documentación de diseño de sistemas de IA", "Especificaciones técnicas detalladas de software, hardware y procesos", "Plan de ejecución BIM (BEP) detallado"],
+      "casuisticas_normativa_ref": ["modelos BIM interoperables formato de intercambio IFC", "producción colaborativa de la información contenedores"]
+    },
+    {
+      "lote": "F", "nombre": "Cuantificación Técnica y Presupuesto",
+      "entregables": ["Memoria de mediciones (extraídas de modelos BIM o estimadas)", "Cuadro de precios unitarios", "Presupuesto detallado", "Cronograma de ejecución", "Curva de inversión (flujo de caja)"],
+      "casuisticas_normativa_ref": ["mediciones extraídas de modelos BIM cuantificación"]
+    },
+    {
+      "lote": "G", "nombre": "Evaluación de Viabilidad",
+      "entregables": ["Informe de viabilidad económica, ambiental y social", "Matriz de riesgos (tecnológicos, de implementación, éticos) y plan de mitigación", "Conclusiones sobre la sostenibilidad integral del proyecto"],
+      "casuisticas_normativa_ref": ["entrega y archivo de la información del activo"]
+    }
+  ],
+  "estandares_calidad_entrega": {
+    "documentos": "PDF, estructura clara, índice, paginación, bibliografía (se valora Markdown)",
+    "modelos_bim": "Formato nativo (RVT, PLN) + IFC, con informe de validación del modelo",
+    "codigo_y_modelos_ia": "Repositorio versionado (Git); modelos con pesos, configuración y documentación de entrenamiento/evaluación",
+    "diagramas": "Formato vectorial (SVG) y/o imágenes PNG de alta resolución"
+  }
+}

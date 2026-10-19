@@ -1,0 +1,360 @@
+{
+  "area_codigo": "AMETBIM",
+  "area_nombre": "BIM",
+  "fuente_lotes": "Pliego_de_Prescripciones_Técnicas_(PPT)_-_Área_BIM.docx (autor Manus AI, Google Drive KINEDRIK)",
+  "metodo": "Cada 'casuistica' liga un Lote real del PPT a chunk_ids obtenidos por búsqueda léxica reproducible sobre kinedrik_normativa_kb_BIM_v0.1.0.json. Sin chunk_id verificado, la casuística queda vacía y marcada REQUIERE VALIDACIÓN — nunca se rellena con texto no verificado.",
+  "casuisticas": [
+    {
+      "lote": "A",
+      "lote_nombre": "Diagnóstico del Sistema",
+      "consulta_usada": "estándares BIM aplicables entorno común de datos CDE",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-4_0#691e039cce",
+          "norma_codigo": "UNE-EN ISO 19650-4:2023",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.71,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.1.7#e1cb4be43c",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.1.7",
+          "titulo_apartado": "Establecer el entorno común de datos del proyecto",
+          "relevancia": 0.57,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_Anexo_A#28ad74333a",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "Anexo A",
+          "titulo_apartado": "Matriz de asignación de gestión de la información",
+          "relevancia": 0.57,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "A",
+      "lote_nombre": "Diagnóstico del Sistema",
+      "consulta_usada": "usos BIM y casos de uso",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_29481-1_0#f28a4bb94f",
+          "norma_codigo": "UNE-EN ISO 29481-1:2018",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_0#ce66cc2170",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.5,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_3.3#ba4cb140ab",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "3.3",
+          "titulo_apartado": "Términos relacionados con la gestión de la información",
+          "relevancia": 0.5,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "B",
+      "lote_nombre": "Análisis Normativo",
+      "consulta_usada": "requisitos y condiciones generales de gestión de la información",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_5.1#aaf39109a8",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "5.1",
+          "titulo_apartado": "Principios",
+          "relevancia": 0.8,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_6.1#bcb2727845",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "6.1",
+          "titulo_apartado": "Principios",
+          "relevancia": 0.8,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_6.3.1#13ac9728b8",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "6.3.1",
+          "titulo_apartado": "Principios generales",
+          "relevancia": 0.8,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "B",
+      "lote_nombre": "Análisis Normativo",
+      "consulta_usada": "plan de ejecución BIM BEP",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_4.3#a715ac6f74",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "4.3",
+          "titulo_apartado": "Perspectivas de gestión de la información",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_3.1.3#6283b4d15b",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "3.1.3",
+          "titulo_apartado": "Términos relacionados con gestión de la información",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.1.6#2106366b50",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.1.6",
+          "titulo_apartado": "Establecer la información de referencia del proyecto y los recursos compartidos",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "B",
+      "lote_nombre": "Análisis Normativo",
+      "consulta_usada": "clasificación y codificación de la información",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.1.7#e1cb4be43c",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.1.7",
+          "titulo_apartado": "Establecer el entorno común de datos del proyecto",
+          "relevancia": 1.0,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_11.1#490068cba3",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "11.1",
+          "titulo_apartado": "Principios",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_11.3#d9b6afa8b1",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "11.3",
+          "titulo_apartado": "Calidad de la información",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "C",
+      "lote_nombre": "Formulación de Alternativas",
+      "consulta_usada": "nivel de detalle LOD nivel de información LOI modelos",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-4_7.6#e862f6a7e9",
+          "norma_codigo": "UNE-EN ISO 19650-4:2023",
+          "apartado": "7.6",
+          "titulo_apartado": "Integridad (completeness)",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-5_Anexo_C#95f050bee3",
+          "norma_codigo": "UNE-EN ISO 19650-5:2020",
+          "apartado": "Anexo C",
+          "titulo_apartado": "Evaluaciones relativas al suministro de información a terceros",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_0#ce66cc2170",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.5,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "D",
+      "lote_nombre": "Selección de Solución",
+      "consulta_usada": "criterios de aceptación validación de la información",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_6.3.3#b559dac65d",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "6.3.3",
+          "titulo_apartado": "Verificación y validación de la información al inicio y al final de las etapas del proyecto",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.2.1#b716958075",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.2.1",
+          "titulo_apartado": "Establecer los requisitos del intercambio de información del adjudicador",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.4.3#1f101ab67b",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.4.3",
+          "titulo_apartado": "Establecer los requisitos del intercambio de información del adjudicatario principal",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "E",
+      "lote_nombre": "Diseño y Dimensionamiento",
+      "consulta_usada": "modelos BIM interoperables formato de intercambio IFC",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-4_7.7#196b0ad50f",
+          "norma_codigo": "UNE-EN ISO 19650-4:2023",
+          "apartado": "7.7",
+          "titulo_apartado": "Otros criterios (informativos)",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-4_Anexo_A#5866e8b882",
+          "norma_codigo": "UNE-EN ISO 19650-4:2023",
+          "apartado": "Anexo A",
+          "titulo_apartado": "Normas de esquemas y de formatos de datos abiertos",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_29481-2_0#0ba8e56575",
+          "norma_codigo": "UNE-EN ISO 29481-2:2017",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.67,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "E",
+      "lote_nombre": "Diseño y Dimensionamiento",
+      "consulta_usada": "producción colaborativa de la información contenedores",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_9#3bd26f56ab",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "9",
+          "titulo_apartado": "Trabajo colaborativo basado en contenedores de información",
+          "relevancia": 1.0,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-2_5.1.7#e1cb4be43c",
+          "norma_codigo": "UNE-EN ISO 19650-2:2019 (versión corregida, junio 2020)",
+          "apartado": "5.1.7",
+          "titulo_apartado": "Establecer el entorno común de datos del proyecto",
+          "relevancia": 1.0,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_3.3#ba4cb140ab",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "3.3",
+          "titulo_apartado": "Términos relacionados con la gestión de la información",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "F",
+      "lote_nombre": "Cuantificación Técnica y Presupuesto",
+      "consulta_usada": "mediciones extraídas de modelos BIM cuantificación",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_0#ce66cc2170",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "0",
+          "titulo_apartado": "Introducción",
+          "relevancia": 0.4,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_3.3#ba4cb140ab",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "3.3",
+          "titulo_apartado": "Términos relacionados con la gestión de la información",
+          "relevancia": 0.4,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_11.1#490068cba3",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "11.1",
+          "titulo_apartado": "Principios",
+          "relevancia": 0.4,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    },
+    {
+      "lote": "G",
+      "lote_nombre": "Evaluación de Viabilidad",
+      "consulta_usada": "entrega y archivo de la información del activo",
+      "extractos": [
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_3.3#ba4cb140ab",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "3.3",
+          "titulo_apartado": "Términos relacionados con la gestión de la información",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_6.3.1#13ac9728b8",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "6.3.1",
+          "titulo_apartado": "Principios generales",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        },
+        {
+          "chunk_id": "UNE-EN_ISO_19650-1_13#b64facec1d",
+          "norma_codigo": "UNE-EN ISO 19650-1:2019",
+          "apartado": "13",
+          "titulo_apartado": "Resumen de \"Building Information Modelling (BIM) según la Norma",
+          "relevancia": 0.75,
+          "estado_revision": "OK"
+        }
+      ],
+      "estado": "OK"
+    }
+  ]
+}
